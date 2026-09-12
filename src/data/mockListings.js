@@ -181,6 +181,46 @@ export const MOCK_LISTINGS = [
 
   // --- CARS ---
   {
+    id: "c-toyota-chr-2021",
+    category: "car",
+    type: "Crossover",
+    title: "Toyota C-HR (2021 European Standard)",
+    location: "Addis Ababa, Ethiopia",
+    server: "Bole & Atlas",
+    price: 6100000,
+    rentPrice: 45000,
+    status: "For Sale",
+    badge: "Verified Listing",
+    featured: true,
+    rating: 5.0,
+    seller: {
+      name: "Soreti Homes (የቤት ሸያጭ ብቻ)",
+      role: "Certified Car & Real Estate Brokerage",
+      phone: "0998 635 499 / 0948 002 510",
+      verified: true
+    },
+    images: [
+      "/toyota-chr/chr-1.jpg",
+      "/toyota-chr/chr-2.jpg",
+      "/toyota-chr/chr-3.jpg",
+      "/toyota-chr/chr-4.jpg",
+      "/toyota-chr/chr-5.jpg"
+    ],
+    specs: {
+      topSpeed: "190 km/h",
+      horsepower: "144 HP",
+      acceleration: "0-100 in 8.2s",
+      drivetrain: "Automatic - Front Wheel Drive",
+      armor: "Excellent EDB Condition",
+      seats: 5,
+      mileage: "49,000 Km",
+      plate: "Code 2 B***",
+      standard: "Europe 🇪🇺",
+      commission: "2%"
+    },
+    description: "Toyota C-HR (2021 Model) - European Standard 🇪🇺. Automatic transmission, 49,000 km mileage, Plate Code 2 B***. Excellent EDB condition (fitesha verified). Price: 6,100,000 ETB (2% commission). Trust with Quality - Sell & Buy any Cars and any home. Contact: 0998 635 499 / 0948 002 510."
+  },
+  {
     id: "c1",
     category: "car",
     type: "Hypercar",
