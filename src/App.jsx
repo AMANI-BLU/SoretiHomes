@@ -1,11 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import CategorySection from './components/CategorySection';
 import FilterBar from './components/FilterBar';
 import ListingCard from './components/ListingCard';
 import ListingDetailModal from './components/ListingDetailModal';
-import CompareDrawer from './components/CompareDrawer';
 import AddListingModal from './components/AddListingModal';
 import AdminPortal from './components/AdminPortal';
 import StatsBanner from './components/StatsBanner';
@@ -13,7 +12,7 @@ import Footer from './components/Footer';
 import InitialIntentModal from './components/InitialIntentModal';
 import { MOCK_LISTINGS, MOCK_BOOKINGS } from './data/mockListings';
 import { TRANSLATIONS } from './data/translations';
-import { Filter, Sparkles, X, Heart, SlidersHorizontal, Scale } from 'lucide-react';
+import { X, Heart, SlidersHorizontal } from 'lucide-react';
 
 export default function App() {
   const [listings, setListings] = useState(MOCK_LISTINGS);
@@ -72,15 +71,13 @@ export default function App() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      document.body.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-      document.body.classList.remove('dark');
-    }
+    const isDark = theme === 'dark';
+    root.classList.toggle('dark', isDark);
+    document.body.classList.toggle('dark', isDark);
+    root.style.colorScheme = theme;
+    document.body.style.colorScheme = theme;
     localStorage.setItem('apex_theme', theme);
   }, [theme]);
 
@@ -116,13 +113,11 @@ export default function App() {
     setCurrentPath(path);
   };
 
-  // Favorites & Compare states
-  const [favorites, setFavorites] = useState(['h1', 'c1']);
-  const [comparedItemIds, setComparedItemIds] = useState([]);
+  // Favorites state
+  const [favorites, setFavorites] = useState([]);
   
   // Modals state
   const [selectedDetailItem, setSelectedDetailItem] = useState(null);
-  const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isAddListingOpen, setIsAddListingOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
@@ -140,20 +135,6 @@ export default function App() {
     setFavorites(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
-  };
-
-  // Toggle Compare Handler
-  const toggleCompare = (id) => {
-    setComparedItemIds(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(item => item !== id);
-      }
-      if (prev.length >= 3) {
-        alert('You can compare a maximum of 3 items at a time.');
-        return prev;
-      }
-      return [...prev, id];
-    });
   };
 
   // Add Listing Handler
@@ -218,11 +199,6 @@ export default function App() {
     return result;
   }, [listings, activeTab, searchQuery, selectedServer, selectedType, statusFilter, maxPrice, onlyVerified, sortBy]);
 
-  // Compared Items objects
-  const comparedItems = useMemo(() => {
-    return listings.filter(item => comparedItemIds.includes(item.id));
-  }, [listings, comparedItemIds]);
-
   // Favorite Items objects
   const favoriteItems = useMemo(() => {
     return listings.filter(item => favorites.includes(item.id));
@@ -258,6 +234,8 @@ export default function App() {
       <>
         <AdminPortal
           listings={listings}
+          theme={theme}
+          toggleTheme={toggleTheme}
           onAddListing={() => setIsAddListingOpen(true)}
           onUpdateListing={handleUpdateListing}
           onDeleteListing={handleDeleteListing}
@@ -295,8 +273,6 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         favoritesCount={favorites.length}
-        compareCount={comparedItemIds.length}
-        onOpenCompare={() => setIsCompareOpen(true)}
         onOpenFavorites={() => setIsFavoritesOpen(true)}
         onNavigateHome={() => navigateTo('/')}
         theme={theme}
@@ -394,8 +370,6 @@ export default function App() {
                   item={item}
                   isFavorite={favorites.includes(item.id)}
                   onToggleFavorite={toggleFavorite}
-                  isCompared={comparedItemIds.includes(item.id)}
-                  onToggleCompare={toggleCompare}
                   onSelect={setSelectedDetailItem}
                   t={t}
                 />
@@ -426,18 +400,6 @@ export default function App() {
         />
       )}
 
-      {/* Compare Modal */}
-      {isCompareOpen && (
-        <CompareDrawer
-          comparedItems={comparedItems}
-          onRemoveCompare={toggleCompare}
-          onClearCompare={() => setComparedItemIds([])}
-          onClose={() => setIsCompareOpen(false)}
-          onSelect={(item) => setSelectedDetailItem(item)}
-          t={t}
-        />
-      )}
-
       {/* Add Listing Modal */}
       {isAddListingOpen && (
         <AddListingModal
@@ -449,11 +411,11 @@ export default function App() {
       {/* Favorites Modal Drawer */}
       {isFavoritesOpen && (
         <div className="modal-backdrop">
-          <div className="modal-content max-w-2xl my-auto p-6 space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="modal-content max-w-2xl my-auto p-4 sm:p-6 space-y-5 sm:space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-                <h3 className="font-extrabold text-xl text-slate-900 dark:text-white">
+                <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white">
                   {t?.favorites || 'Saved Favorites'} ({favoriteItems.length})
                 </h3>
               </div>
@@ -476,19 +438,19 @@ export default function App() {
                 {favoriteItems.map(item => (
                   <div
                     key={item.id}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-4 hover:border-amber-300 dark:hover:border-amber-500 transition-all"
+                    className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:border-amber-300 dark:hover:border-amber-500 transition-all"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <img src={item.images[0]} alt="" className="w-16 h-12 rounded-lg object-cover" />
-                      <div>
-                        <h4 className="font-extrabold text-slate-900 dark:text-white text-xs">{item.title}</h4>
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-slate-900 dark:text-white text-xs line-clamp-2">{item.title}</h4>
                         <span className="text-amber-600 dark:text-amber-400 font-extrabold text-xs block">
                           ETB {item.price.toLocaleString()}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => {
                           setIsFavoritesOpen(false);

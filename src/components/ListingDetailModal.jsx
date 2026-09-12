@@ -293,7 +293,7 @@ export default function ListingDetailModal({
                   <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium max-w-md mx-auto leading-relaxed">
                     Thank you, <span className="font-bold">{inquiryName || 'Valued Client'}</span>. Soreti Homes team will contact you directly at <span className="font-bold">{inquiryPhone}</span> regarding <span className="font-bold">{item.title}</span>.
                   </p>
-                  <div className="pt-2 flex justify-center gap-3">
+                  <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
                     <a
                       href="https://t.me/gamme29"
                       target="_blank"

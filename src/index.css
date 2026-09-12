@@ -34,6 +34,13 @@ html.dark, .dark {
 * {
   font-family: var(--font-main);
   scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 0;
 }
 
 body {
@@ -79,8 +86,23 @@ html.dark ::-webkit-scrollbar-thumb, .dark ::-webkit-scrollbar-thumb {
 /* Enhanced Spacious Container */
 .app-container {
   max-width: 1320px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 1.25rem;
+}
+
+@media (max-width: 639px) {
+  .app-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .app-container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 }
 
 @media (min-width: 640px) {
@@ -296,6 +318,8 @@ html.dark .hero-search-box, .dark .hero-search-box {
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: fadeIn 0.25s ease forwards;
 }
 
@@ -310,7 +334,60 @@ html.dark .hero-search-box, .dark .hero-search-box {
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
   border: 1px solid var(--card-border);
   position: relative;
+  min-width: 0;
+  overscroll-behavior: contain;
   animation: scaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 639px) {
+  .modal-backdrop {
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  .modal-content {
+    max-height: calc(100dvh - 1.5rem);
+    border-radius: 1.25rem;
+  }
+}
+
+/* Admin dashboard theme bridge. The dashboard uses a dark-first palette so
+   its existing dense data layout remains intact while still following the
+   global light/dark preference. */
+.admin-light {
+  background-color: #f8fafc !important;
+  color: #0f172a;
+}
+
+.admin-light .bg-slate-950 { background-color: #f8fafc !important; }
+.admin-light .bg-slate-900 { background-color: #ffffff !important; }
+.admin-light .bg-slate-800 { background-color: #f1f5f9 !important; }
+.admin-light .bg-slate-700 { background-color: #e2e8f0 !important; }
+.admin-light .border-slate-800 { border-color: #e2e8f0 !important; }
+.admin-light .border-slate-700 { border-color: #cbd5e1 !important; }
+.admin-light .text-white { color: #0f172a !important; }
+.admin-light .text-slate-100 { color: #0f172a !important; }
+.admin-light .text-slate-200 { color: #1e293b !important; }
+.admin-light .text-slate-300 { color: #334155 !important; }
+.admin-light .text-slate-400 { color: #64748b !important; }
+.admin-light .text-slate-500 { color: #64748b !important; }
+.admin-light .text-slate-600 { color: #475569 !important; }
+.admin-light [class~="hover:bg-slate-800/80"]:hover { background-color: #e2e8f0 !important; }
+.admin-light [class~="hover:bg-slate-800/50"]:hover { background-color: #f1f5f9 !important; }
+.admin-light [class~="hover:bg-slate-700"]:hover { background-color: #cbd5e1 !important; }
+.admin-light input.bg-slate-950,
+.admin-light select.bg-slate-950,
+.admin-light textarea.bg-slate-950 {
+  color: #0f172a !important;
+}
+
+.admin-portal {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.admin-portal table {
+  min-width: 900px;
 }
 
 /* Spacious Responsive Grid Layouts */
@@ -333,4 +410,3 @@ html.dark .hero-search-box, .dark .hero-search-box {
     gap: 2.25rem;
   }
 }
-

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Home, Car, Building2, Heart, Scale, Sparkles, Send, Menu, X, Sun, Moon, HelpCircle, Languages, Globe } from 'lucide-react';
+import { Car, Building2, Heart, Sparkles, Send, Menu, X, Sun, Moon, HelpCircle } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
   setActiveTab,
   favoritesCount,
-  compareCount,
-  onOpenCompare,
   onOpenFavorites,
   onNavigateHome,
   theme,
@@ -20,25 +18,25 @@ export default function Navbar({
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-amber-500/20 dark:border-amber-500/20 shadow-md transition-colors duration-300">
-      <div className="app-container flex items-center justify-between h-20">
+      <div className="app-container flex items-center justify-between gap-2 min-w-0 h-16 sm:h-20">
         
         {/* Brand Logo */}
         <div
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-3 min-w-0 cursor-pointer group"
           onClick={() => {
             if (onNavigateHome) onNavigateHome();
             setActiveTab('all');
             setMobileMenuOpen(false);
           }}
         >
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md group-hover:scale-105 transition-transform shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md group-hover:scale-105 transition-transform shrink-0">
             <img src="/soreti-logo.jpg" alt="Soreti Homes Logo" className="w-full h-full object-cover" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">{t?.siteTitle || "SORETI HOMES"}</span>
+              <span className="font-extrabold text-base sm:text-xl tracking-tight text-slate-900 dark:text-white truncate">{t?.siteTitle || "SORETI HOMES"}</span>
             </div>
-            <p className="text-[10px] font-bold tracking-wider text-amber-600 dark:text-amber-400 uppercase">
+            <p className="hidden sm:block text-[10px] font-bold tracking-wider text-amber-600 dark:text-amber-400 uppercase truncate">
               {t?.amharicTagline || "የቤት ሸያጭ ብቻ"} • Addis Ababa
             </p>
           </div>
@@ -51,7 +49,7 @@ export default function Navbar({
               if (onNavigateHome) onNavigateHome();
               setActiveTab('all');
             }}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'all'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/70 dark:hover:bg-slate-700/70'
@@ -66,7 +64,7 @@ export default function Navbar({
               if (onNavigateHome) onNavigateHome();
               setActiveTab('house');
             }}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'house'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/70 dark:hover:bg-slate-700/70'
@@ -81,7 +79,7 @@ export default function Navbar({
               if (onNavigateHome) onNavigateHome();
               setActiveTab('car');
             }}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'car'
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/70 dark:hover:bg-slate-700/70'
@@ -93,10 +91,10 @@ export default function Navbar({
         </nav>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
           {/* Language Selector Switcher (EN / AM) */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
+          <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
             <button
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all ${
@@ -140,21 +138,21 @@ export default function Navbar({
           {/* Theme Switcher Toggle (Sun / Moon) */}
           <button
             onClick={toggleTheme}
-            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-slate-800 transition-all"
+            className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-slate-800 transition-all"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle theme mode"
           >
             {theme === 'dark' ? (
-              <Sun className="w-5 h-5 text-amber-400 hover:rotate-45 transition-transform" />
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 hover:rotate-45 transition-transform" />
             ) : (
-              <Moon className="w-5 h-5 text-slate-700 hover:-rotate-12 transition-transform" />
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 hover:-rotate-12 transition-transform" />
             )}
           </button>
 
           {/* Favorites Wishlist */}
           <button
             onClick={onOpenFavorites}
-            className="relative p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-amber-400 hover:text-amber-500 dark:hover:text-amber-400 transition-all"
+            className="relative p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-amber-400 hover:text-amber-500 dark:hover:text-amber-400 transition-all"
             title={t?.savedFavorites || "Saved Favorites"}
           >
             <Heart className="w-5 h-5" />
@@ -179,7 +177,7 @@ export default function Navbar({
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
+            className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -190,7 +188,7 @@ export default function Navbar({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3 animate-fade-in shadow-xl">
+        <div className="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-3 animate-fade-in shadow-xl">
           
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -275,5 +273,3 @@ export default function Navbar({
     </header>
   );
 }
-
-

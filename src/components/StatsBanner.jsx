@@ -32,7 +32,7 @@ export default function StatsBanner() {
   return (
     <section className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-white py-14 sm:py-16 shadow-inner border-y border-amber-500/20">
       <div className="app-container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-7 sm:gap-8 lg:gap-12">
           {STATS.map((stat) => {
             const IconComp = stat.icon;
             return (

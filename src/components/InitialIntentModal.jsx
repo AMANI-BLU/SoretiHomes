@@ -11,7 +11,7 @@ export default function InitialIntentModal({ isOpen, onClose, onSelectIntent, t 
 
   return (
     <div className="modal-backdrop z-[100] animate-fade-in p-4 sm:p-6">
-      <div className="modal-content max-w-3xl w-full bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl border border-amber-500/30 dark:border-amber-500/20 relative overflow-hidden">
+      <div className="modal-content max-w-3xl w-full bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-10 shadow-2xl border border-amber-500/30 dark:border-amber-500/20 relative overflow-hidden">
         
         {/* Background Decorative Ambient Glows */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -48,7 +48,7 @@ export default function InitialIntentModal({ isOpen, onClose, onSelectIntent, t 
           {/* HOUSES OPTION CARD */}
           <div
             onClick={() => handleSelect('house')}
-            className="group relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 p-6 cursor-pointer transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
+            className="group relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 p-5 sm:p-6 cursor-pointer transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all" />
 
@@ -90,7 +90,7 @@ export default function InitialIntentModal({ isOpen, onClose, onSelectIntent, t 
           {/* CARS OPTION CARD */}
           <div
             onClick={() => handleSelect('car')}
-            className="group relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 p-6 cursor-pointer transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
+            className="group relative rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-400 bg-slate-50 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 p-5 sm:p-6 cursor-pointer transition-all duration-300 shadow-md hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all" />
             

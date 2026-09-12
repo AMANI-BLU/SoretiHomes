@@ -76,19 +76,19 @@ export default function AddListingModal({ onClose, onAddListing }) {
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content animate-scale-up max-w-2xl my-auto p-6 space-y-6">
+      <div className="modal-content animate-scale-up max-w-2xl my-auto p-4 sm:p-6 space-y-5 sm:space-y-6">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <PlusCircle className="w-6 h-6 text-blue-600" />
-            <h3 className="font-extrabold text-xl text-slate-900">
+            <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white">
               List Your Car or House for Sale
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
+            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
           >
             <X className="w-5 h-5" />
           </button>
@@ -97,7 +97,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {/* Category Toggle */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => {
@@ -106,7 +106,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
                 setImageUrl('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80');
               }}
               className={`p-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-                category === 'house' ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' : 'border-slate-200 text-slate-600'
+                category === 'house' ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 shadow-sm' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
               }`}
             >
               <Building2 className="w-4 h-4" />
@@ -120,7 +120,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
                 setImageUrl('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80');
               }}
               className={`p-3 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-                category === 'car' ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' : 'border-slate-200 text-slate-600'
+                category === 'car' ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 shadow-sm' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
               }`}
             >
               <Car className="w-4 h-4" />
@@ -131,7 +131,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
           {/* Title & Server */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
                 Listing Title
               </label>
               <input
@@ -140,18 +140,18 @@ export default function AddListingModal({ onClose, onAddListing }) {
                 placeholder={category === 'house' ? 'e.g. Modern Vinewood Mansion' : 'e.g. Pegassi Zentorno Twin Turbo'}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
                 City District / Region
               </label>
               <select
                 value={server}
                 onChange={(e) => setServer(e.target.value)}
-                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer"
+                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
               >
                 {SERVERS.filter(s => s !== 'All Game Servers').map(s => (
                   <option key={s} value={s}>{s}</option>
@@ -163,7 +163,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
           {/* Price & Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
                 Asking Price ($ USD)
               </label>
               <input
@@ -171,12 +171,12 @@ export default function AddListingModal({ onClose, onAddListing }) {
                 required
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
                 In-Game Location
               </label>
               <input
@@ -185,14 +185,14 @@ export default function AddListingModal({ onClose, onAddListing }) {
                 placeholder="e.g. Rockford Hills / Pillbox Hill"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
           {/* Image URL */}
           <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
               Image URL
             </label>
             <input
@@ -200,46 +200,46 @@ export default function AddListingModal({ onClose, onAddListing }) {
               required
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           {/* Specs Inputs */}
           {category === 'house' ? (
-            <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Beds</label>
-                <input type="number" value={beds} onChange={e => setBeds(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="number" value={beds} onChange={e => setBeds(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Baths</label>
-                <input type="number" value={baths} onChange={e => setBaths(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="number" value={baths} onChange={e => setBaths(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">SqFt</label>
-                <input type="number" value={sqft} onChange={e => setSqft(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="number" value={sqft} onChange={e => setSqft(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Top Speed</label>
-                <input type="text" value={topSpeed} onChange={e => setTopSpeed(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="text" value={topSpeed} onChange={e => setTopSpeed(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Horsepower</label>
-                <input type="text" value={horsepower} onChange={e => setHorsepower(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="text" value={horsepower} onChange={e => setHorsepower(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">0-60</label>
-                <input type="text" value={acceleration} onChange={e => setAcceleration(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border" />
+                <input type="text" value={acceleration} onChange={e => setAcceleration(e.target.value)} className="w-full p-2 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white" />
               </div>
             </div>
           )}
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
               Description / Notes
             </label>
             <textarea
@@ -247,7 +247,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
               placeholder="Describe your asset, tunes, security tier..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
             />
           </div>
 

@@ -62,19 +62,19 @@ export default function FilterBar({
     onlyVerified;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-500/20 dark:border-amber-500/20 shadow-xl p-4 sm:p-6 mb-8 transition-all space-y-5">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-amber-500/20 dark:border-amber-500/20 shadow-xl p-3 sm:p-6 mb-8 transition-all space-y-4 sm:space-y-5">
       
       {/* 1. Top Controls Bar: Category Pills + Search Input + Sort Dropdown */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
         
         {/* Category Segmented Switch Buttons */}
-        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-x-auto no-scrollbar shrink-0">
+        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-x-auto no-scrollbar shrink-0 w-full lg:w-auto">
           <button
             onClick={() => {
               setActiveTab('all');
               setSelectedType('All Types');
             }}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'all'
                 ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/60 dark:hover:bg-slate-700/60'
@@ -89,7 +89,7 @@ export default function FilterBar({
               setActiveTab('house');
               setSelectedType('All Types');
             }}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'house'
                 ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/60 dark:hover:bg-slate-700/60'
@@ -104,7 +104,7 @@ export default function FilterBar({
               setActiveTab('car');
               setSelectedType('All Types');
             }}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'car'
                 ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
                 : 'text-slate-700 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-white/60 dark:hover:bg-slate-700/60'
@@ -116,7 +116,7 @@ export default function FilterBar({
         </div>
 
         {/* Live Search Field */}
-        <div className="flex-1 min-w-[240px] relative">
+        <div className="flex-1 min-w-0 w-full lg:min-w-[240px] relative">
           <Search className="w-4.5 h-4.5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -136,15 +136,15 @@ export default function FilterBar({
         </div>
 
         {/* Sort & Advanced Toggle Group */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full lg:w-auto shrink-0">
           
           {/* Sort By Dropdown */}
-          <div className="relative flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold focus-within:border-amber-500">
+          <div className="relative min-w-0 flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-2.5 sm:px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold focus-within:border-amber-500">
             <ArrowUpDown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 dark:bg-slate-800 focus:outline-none cursor-pointer pr-1"
+              className="min-w-0 max-w-full bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 dark:bg-slate-800 focus:outline-none cursor-pointer pr-1"
             >
               <option value="recommended" className="dark:bg-slate-800">{t?.featuredOrder || "Featured Order"}</option>
               <option value="price-asc" className="dark:bg-slate-800">{t?.priceLowHigh || "Price: Low to High"}</option>
@@ -156,7 +156,7 @@ export default function FilterBar({
           {/* Toggle Advanced Filters Drawer Button */}
           <button
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className={`px-4 py-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
+            className={`w-full justify-center px-2.5 sm:px-4 py-2.5 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
               isAdvancedOpen || hasActiveFilters
                 ? 'bg-amber-50 dark:bg-amber-950/80 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300 shadow-xs'
                 : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -269,7 +269,7 @@ export default function FilterBar({
 
       {/* 3. Advanced Collapsible Filter Drawer */}
       {isAdvancedOpen && (
-        <div className="p-5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 animate-fade-in pt-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 animate-fade-in pt-4">
           <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-700/80 pb-3">
             <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-amber-500" />

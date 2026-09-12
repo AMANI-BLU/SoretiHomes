@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Soreti Homes | የቤት ሸያጭ ብቻ - Addis Ababa Premier Real Estate & Vehicles</title>
     <meta name="description" content="Soreti Homes (የቤት ሸያጭ ብቻ) - Trusted, fast, and professional real estate marketplace in Addis Ababa, Ethiopia. Find villas, penthouses, apartments, and luxury vehicles." />
+    <script>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem('apex_theme');
+          const theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.style.colorScheme = theme;
+        } catch {
+          // Theme preferences are optional; React applies the fallback on mount.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

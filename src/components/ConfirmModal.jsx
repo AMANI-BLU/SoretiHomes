@@ -15,7 +15,7 @@ export default function ConfirmModal({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content max-w-md my-auto p-6 space-y-5 animate-scale-up border border-slate-200">
+      <div className="modal-content max-w-md my-auto p-6 space-y-5 animate-scale-up border border-slate-200 dark:border-slate-800">
         
         {/* Header Icon */}
         <div className="flex items-center gap-3">
@@ -25,17 +25,17 @@ export default function ConfirmModal({
             <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-900 text-lg leading-tight">
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-lg leading-tight">
               {title}
             </h3>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
               {message}
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           {onCancel && (
             <button
               onClick={onCancel}

@@ -20,12 +20,15 @@ import {
   Calendar,
   Phone,
   User,
-  Clock
+  Moon,
+  Sun
 } from 'lucide-react';
 import EditAssetModal from './EditAssetModal';
 
 export default function AdminPortal({
   listings,
+  theme = 'dark',
+  toggleTheme,
   onAddListing,
   onUpdateListing,
   onDeleteListing,
@@ -112,7 +115,7 @@ export default function AdminPortal({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+    <div className={`admin-portal min-h-screen bg-slate-950 text-slate-100 flex font-sans transition-colors duration-300 ${theme === 'dark' ? 'admin-dark' : 'admin-light'}`}>
       
       {/* Toast Notification */}
       {notification && (
@@ -233,9 +236,9 @@ export default function AdminPortal({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Top App Header */}
-        <header className="h-20 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30">
+        <header className="min-h-20 bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-3 sm:py-0 flex items-center justify-between gap-3 sticky top-0 z-30">
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
@@ -243,35 +246,45 @@ export default function AdminPortal({
               <Menu className="w-5 h-5" />
             </button>
 
-            <div>
-              <h2 className="font-extrabold text-xl text-white tracking-tight capitalize">
+            <div className="min-w-0">
+              <h2 className="font-extrabold text-base sm:text-xl text-white tracking-tight capitalize truncate">
                 {activeTab === 'all' ? 'Dashboard Overview' : activeTab === 'bookings' ? 'Client Inspection Bookings' : `${activeTab} Management`}
               </h2>
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="hidden sm:block text-xs text-slate-400 font-medium truncate">
                 Soreti Homes (የቤት ሸያጭ ብቻ) • Addis Ababa Management Hub
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all border border-slate-700"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle theme mode"
+              aria-pressed={theme === 'dark'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            </button>
             <button
               onClick={onAddListing}
-              className="btn-primary py-2.5 px-4 text-xs font-bold"
+              className="btn-primary py-2.5 px-2.5 sm:px-4 text-xs font-bold"
             >
               <PlusCircle className="w-4 h-4" />
-              Post Asset
+              <span className="hidden sm:inline">Post Asset</span>
+              <span className="sm:hidden">Post</span>
             </button>
           </div>
 
         </header>
 
         {/* Dashboard Main Content */}
-        <main className="p-6 space-y-8 flex-1 overflow-y-auto">
+        <main className="p-4 sm:p-6 space-y-6 sm:space-y-8 flex-1 overflow-y-auto">
           
           {/* Top Metric Cards Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             
-            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Total Listed Assets
@@ -288,7 +301,7 @@ export default function AdminPortal({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Client Bookings
@@ -305,7 +318,7 @@ export default function AdminPortal({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Market Valuation
@@ -322,7 +335,7 @@ export default function AdminPortal({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Addis Districts
