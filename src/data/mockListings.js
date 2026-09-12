@@ -181,6 +181,48 @@ export const MOCK_LISTINGS = [
 
   // --- CARS ---
   {
+    id: "c-byd-leopard-3-2025",
+    category: "car",
+    type: "SUV",
+    title: "2025 BYD Leopard 3 4WD Ultra (Max Edition)",
+    location: "Addis Ababa, Ethiopia",
+    server: "Bole & Atlas",
+    price: 7300000,
+    rentPrice: 55000,
+    status: "For Sale",
+    badge: "Full Option ⚡️",
+    featured: true,
+    rating: 5.0,
+    seller: {
+      name: "Soreti Homes (የቤት ሸያጭ ብቻ)",
+      role: "Certified Electric Vehicle Broker",
+      phone: "0998 635 499 / 0948 002 510",
+      verified: true
+    },
+    images: [
+      "/byd-leopard3/byd-1.jpg",
+      "/byd-leopard3/byd-2.jpg",
+      "/byd-leopard3/byd-3.jpg",
+      "/byd-leopard3/byd-4.jpg",
+      "/byd-leopard3/byd-5.jpg"
+    ],
+    specs: {
+      topSpeed: "201 km/h",
+      horsepower: "422 HP (310KW)",
+      acceleration: "0-100 in 4.9s",
+      drivetrain: "Dual Motor AWD (4WD Ultra)",
+      armor: "Brand New Electric SUV",
+      seats: 5,
+      battery: "72.96 kWh",
+      range: "610 KM Range ⚡️",
+      fuel: "Electric ⚡️",
+      mileage: "10,000 Km",
+      year: "2025/06 (1st Gen)",
+      commission: "2%"
+    },
+    description: "🔥 2025/05 BYD Leopard 03 4WD Ultra (Max Edition - Full Option). Dual Motor AWD producing 310KW (422 HP), 72.96 kWh Blade Battery with 610 KM electric range ⚡️. 201 KM/H top speed, 5 seats, 10,000 km mileage. Price: 7.3 Million Birr (2% commission). Trust with Quality - Sell & Buy any Cars and any home. Contact: 0998 635 499 / 0948 002 510."
+  },
+  {
     id: "c-toyota-chr-2021",
     category: "car",
     type: "Crossover",
