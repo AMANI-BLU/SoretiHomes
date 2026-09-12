@@ -265,7 +265,7 @@ export default function ListingDetailModal({
                   </div>
 
                   <a
-                    href="https://t.me/gamme29"
+                    href="https://t.me/soretihomes"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary py-2 px-3.5 text-xs font-bold shrink-0 flex items-center gap-1.5"
@@ -295,7 +295,7 @@ export default function ListingDetailModal({
                   </p>
                   <div className="pt-2 flex flex-col sm:flex-row justify-center gap-3">
                     <a
-                      href="https://t.me/gamme29"
+                      href="https://t.me/soretihomes"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-primary py-2.5 px-6 text-xs font-bold inline-flex items-center gap-2"

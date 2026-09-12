@@ -10,9 +10,10 @@ import AdminPortal from './components/AdminPortal';
 import StatsBanner from './components/StatsBanner';
 import Footer from './components/Footer';
 import InitialIntentModal from './components/InitialIntentModal';
+import InitialLanguageModal from './components/InitialLanguageModal';
 import { MOCK_LISTINGS, MOCK_BOOKINGS } from './data/mockListings';
 import { TRANSLATIONS } from './data/translations';
-import { X, Heart, SlidersHorizontal } from 'lucide-react';
+import { X, Heart, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
 
 export default function App() {
   const [listings, setListings] = useState(MOCK_LISTINGS);
@@ -52,16 +53,19 @@ export default function App() {
     setBookings(prev => prev.filter(b => b.id !== id));
   };
 
-  // Language state ('en' | 'am')
+  // Language state ('en' | 'am' | 'om')
   const [lang, setLang] = useState(() => {
-    return localStorage.getItem('apex_lang') || 'en';
+    const savedLang = localStorage.getItem('apex_lang');
+    return savedLang && TRANSLATIONS[savedLang] ? savedLang : 'en';
   });
 
   const t = TRANSLATIONS[lang] || TRANSLATIONS.en;
 
   const handleLanguageChange = (newLang) => {
+    if (!TRANSLATIONS[newLang]) return;
     setLang(newLang);
     localStorage.setItem('apex_lang', newLang);
+    localStorage.setItem('apex_language_selected', 'true');
   };
 
   // Dark / Light Theme state
@@ -85,7 +89,10 @@ export default function App() {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  // Initial Intent Choice Modal state ("What are you looking for today?")
+  // Initial language and intent choices shown on the first page.
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(() => {
+    return localStorage.getItem('apex_language_selected') !== 'true';
+  });
   const [isIntentModalOpen, setIsIntentModalOpen] = useState(true);
 
   const handleSelectIntent = (category) => {
@@ -261,8 +268,18 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300">
       
       {/* Initial Intent Modal ("What are you looking for today?") */}
+      <InitialLanguageModal
+        isOpen={isLanguageModalOpen}
+        lang={lang}
+        onLanguageChange={(newLang) => {
+          handleLanguageChange(newLang);
+          setIsLanguageModalOpen(false);
+        }}
+        t={t}
+      />
+
       <InitialIntentModal
-        isOpen={isIntentModalOpen}
+        isOpen={isIntentModalOpen && !isLanguageModalOpen}
         onClose={() => setIsIntentModalOpen(false)}
         onSelectIntent={handleSelectIntent}
         t={t}
@@ -270,7 +287,6 @@ export default function App() {
 
       {/* 1. Header Navigation */}
       <Navbar
-        activeTab={activeTab}
         setActiveTab={setActiveTab}
         favoritesCount={favorites.length}
         onOpenFavorites={() => setIsFavoritesOpen(true)}
@@ -456,9 +472,10 @@ export default function App() {
                           setIsFavoritesOpen(false);
                           setSelectedDetailItem(item);
                         }}
-                        className="btn-primary py-1.5 px-3 text-[11px] font-bold"
+                        className="btn-primary w-full sm:w-auto justify-center py-2.5 px-4.5 text-xs font-bold"
                       >
-                        {t?.viewDetails || 'View'}
+                        {t?.viewDetails || 'View Details'}
+                        <ArrowUpRight className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => toggleFavorite(item.id)}

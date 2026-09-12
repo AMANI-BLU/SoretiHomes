@@ -144,7 +144,7 @@ export default function ListingCard({
           {/* View Details Button */}
           <button
             onClick={() => onSelect(item)}
-            className="btn-primary w-full sm:w-auto justify-center py-2.5 px-4.5 text-xs font-bold"
+            className="btn-primary w-full justify-center py-2.5 px-4.5 text-xs font-bold flex items-center gap-1.5"
           >
             {t?.viewDetails || 'View Details'}
             <ArrowUpRight className="w-4 h-4" />

@@ -87,13 +87,13 @@ export default function Footer() {
               </li>
               <li className="pt-2">
                 <a
-                  href="https://t.me/gamme29"
+                  href="https://t.me/soretihomes"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary py-2 px-3.5 text-xs font-bold inline-flex items-center gap-2"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  Telegram (@gamme29)
+                  Telegram (@soretihomes)
                 </a>
               </li>
             </ul>

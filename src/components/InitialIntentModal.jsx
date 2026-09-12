@@ -59,24 +59,24 @@ export default function InitialIntentModal({ isOpen, onClose, onSelectIntent, t 
 
               <div>
                 <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                  Addis Ababa Real Estate
+                  {t?.realEstateTag || 'Addis Ababa Real Estate'}
                 </span>
                 <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
                   {t?.properties || "Luxury Estates & Houses"}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                  Bole Villas, Old Airport estates, CMC luxury apartments, and G+2 mansions.
+                  {t?.propertyDescription || 'Bole Villas, Old Airport estates, CMC luxury apartments, and G+2 mansions.'}
                 </p>
               </div>
 
               <div className="space-y-1.5 pt-2 border-t border-slate-200/80 dark:border-slate-700/60">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Verified Legal Deeds & Ownership</span>
+                  <span>{t?.verifiedDeeds || 'Verified Legal Deeds & Ownership'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Prime Bole & Kazanchis Locations</span>
+                  <span>{t?.primeLocations || 'Prime Bole & Kazanchis Locations'}</span>
                 </div>
               </div>
             </div>
@@ -101,24 +101,24 @@ export default function InitialIntentModal({ isOpen, onClose, onSelectIntent, t 
 
               <div>
                 <span className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                  High Performance Motors
+                  {t?.motorsTag || 'High Performance Motors'}
                 </span>
                 <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
                   {t?.vehicles || "Luxury Vehicles & Cars"}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                  V8 Land Cruisers, Range Rovers, Porsche 911s, and executive vehicles.
+                  {t?.vehicleDescription || 'V8 Land Cruisers, Range Rovers, Porsche 911s, and executive vehicles.'}
                 </p>
               </div>
 
               <div className="space-y-1.5 pt-2 border-t border-slate-200/80 dark:border-slate-700/60">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Inspected Engine & Full Service</span>
+                  <span>{t?.inspectedEngine || 'Inspected Engine & Full Service'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span>Instant Title Transfer</span>
+                  <span>{t?.instantTitleTransfer || 'Instant Title Transfer'}</span>
                 </div>
               </div>
             </div>

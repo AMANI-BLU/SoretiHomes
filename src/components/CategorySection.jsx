@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Building, Home, Car, Shield } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Building, Home, Car, Shield } from 'lucide-react';
 import { CATEGORIES_CONFIG } from '../data/mockListings';
 
 const iconMap = {
@@ -70,13 +70,21 @@ export default function CategorySection({ onSelectCategory, t }) {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-200/70 dark:border-slate-700/70">
+                  <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200/70 dark:border-slate-700/70">
                     <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       {cat.count}
                     </span>
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      {t?.viewDetails || "Explore Now"} <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSelectCategory(cat.type, cat.filterType);
+                      }}
+                      className="btn-primary w-auto shrink-0 whitespace-nowrap justify-center py-2.5 px-4.5 text-xs font-bold flex items-center gap-1.5"
+                    >
+                      {t?.exploreCategory || "Explore Category"}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
@@ -89,4 +97,3 @@ export default function CategorySection({ onSelectCategory, t }) {
     </section>
   );
 }
-
