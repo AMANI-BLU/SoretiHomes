@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { X, PlusCircle, Building2, Car, MapPin, DollarSign, Upload, Sparkles, CheckCircle, Image as ImageIcon, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
-import { SERVERS } from '../data/mockListings';
+import React, { useEffect, useState } from 'react';
+import { X, PlusCircle, Building2, Car, Sparkles, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { getListingSaveErrorMessage, uploadListingImage, validateListingImageFile } from '../lib/supabase';
 
 const REAL_ESTATE_TYPES = ['Villa', 'Penthouse', 'Apartment', 'Mansion', 'Townhouse', 'Commercial Building', 'Duplex'];
 const VEHICLE_TYPES = ['Luxury SUV', 'Executive Sedan', 'Electric / EV', '4WD / Off-Road', 'Supercar', 'Commercial Truck'];
@@ -23,15 +23,18 @@ export default function AddListingModal({ onClose, onAddListing }) {
   const [type, setType] = useState('Villa');
   const [location, setLocation] = useState('Bole Atlas, Addis Ababa');
   const [server, setServer] = useState('Bole & Atlas');
+  const [customServer, setCustomServer] = useState('');
   const [price, setPrice] = useState(35000000);
   const [rentPrice, setRentPrice] = useState('');
   const [status, setStatus] = useState('For Sale');
   const [badge, setBadge] = useState('Featured');
   const [featured, setFeatured] = useState(true);
-  const [imageUrl, setImageUrl] = useState('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80');
-  const [additionalImages, setAdditionalImages] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [galleryFiles, setGalleryFiles] = useState([]);
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [errors, setErrors] = useState({});
 
   // House specs
@@ -53,17 +56,53 @@ export default function AddListingModal({ onClose, onAddListing }) {
   // Broker Contact
   const [brokerPhone, setBrokerPhone] = useState('0998 635 499 / 0948 002 510');
 
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
+  const handlePrimaryImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validationError = validateListingImageFile(file);
+    if (validationError) {
+      setImageFile(null);
+      setImagePreview('');
+      setErrors(prev => ({ ...prev, image: validationError }));
+      event.target.value = '';
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setErrors(prev => ({ ...prev, image: null }));
+  };
+
+  const handleGalleryImagesChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    const invalidFile = files.find(file => validateListingImageFile(file));
+    if (invalidFile) {
+      setGalleryFiles([]);
+      setErrors(prev => ({ ...prev, gallery: validateListingImageFile(invalidFile) }));
+      event.target.value = '';
+      return;
+    }
+
+    setGalleryFiles(files);
+    setErrors(prev => ({ ...prev, gallery: null }));
+  };
+
   const handleCategorySwitch = (newCat) => {
     setCategory(newCat);
     setErrors({});
     if (newCat === 'house') {
       setType('Villa');
-      setImageUrl('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80');
       setLocation('Bole Atlas, Addis Ababa');
       setPrice(35000000);
     } else {
       setType('Luxury SUV');
-      setImageUrl('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80');
       setLocation('Bole Medhanialem, Addis Ababa');
       setPrice(18500000);
     }
@@ -77,18 +116,17 @@ export default function AddListingModal({ onClose, onAddListing }) {
       errs.title = 'Title must be at least 5 characters long.';
     }
 
-    if (!location.trim()) {
-      errs.location = 'Specific address / street location is required.';
+    if (server === '__other__' && !customServer.trim()) {
+      errs.server = 'Enter a sub-city or district.';
     }
 
     if (price === '' || price === null || isNaN(Number(price)) || Number(price) <= 0) {
       errs.price = 'Please enter a valid price greater than 0 ETB.';
     }
 
-    if (!imageUrl.trim()) {
-      errs.imageUrl = 'Primary photo URL is required.';
-    } else if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
-      errs.imageUrl = 'Image URL must start with http:// or https://';
+    const imageError = validateListingImageFile(imageFile);
+    if (imageError) {
+      errs.image = 'Select a primary JPG, PNG, or WEBP image (10 MB max).';
     }
 
     if (!brokerPhone.trim()) {
@@ -104,64 +142,58 @@ export default function AddListingModal({ onClose, onAddListing }) {
     if (!validateForm()) return;
     setIsSubmitting(true);
 
-    // Parse additional image URLs
-    const otherImgs = additionalImages
-      .split(/[\n,]+/)
-      .map(s => s.trim())
-      .filter(s => s.startsWith('http'));
-
-    const allImages = [imageUrl, ...otherImgs];
-
-    const newListing = {
-      id: `${category}-${Date.now()}`,
-      category,
-      type,
-      title: title.trim(),
-      location: location.trim(),
-      server,
-      price: Number(price) || 0,
-      rentPrice: rentPrice ? Number(rentPrice) : undefined,
-      status,
-      badge: badge || 'New',
-      featured,
-      rating: 5.0,
-      seller: {
-        name: 'Soreti Homes (የቤት ሸያጭ ብቻ)',
-        role: 'Certified Addis Estate Broker',
-        phone: brokerPhone || '0998 635 499 / 0948 002 510',
-        verified: true
-      },
-      images: allImages,
-      specs: category === 'house' ? {
-        beds: Number(beds) || 0,
-        baths: Number(baths) || 0,
-        sqft: Number(area) || 0,
-        garageSlots: Number(garageSlots) || 0,
-        generator,
-        waterTank,
-        security: '24/7 Security Guard & Perimeter Fence',
-        interiorType: 'European Finish & Modern Architecture'
-      } : {
-        year,
-        mileage,
-        transmission,
-        fuelType,
-        engine,
-        dutyStatus,
-        seats: 5,
-        condition: 'Mint / Brand New Condition'
-      },
-      description: description || `Premium ${type} available for ${status.toLowerCase()} through Soreti Homes. Located in prime ${server}, Addis Ababa.`
-    };
-
     try {
+      const selectedServer = server === '__other__' ? customServer.trim() : server;
+      const allImages = await Promise.all([imageFile, ...galleryFiles].map(uploadListingImage));
+      const newListing = {
+        id: `${category}-${Date.now()}`,
+        category,
+        type,
+        title: title.trim(),
+        location: location.trim(),
+        server: selectedServer,
+        price: Number(price) || 0,
+        rentPrice: rentPrice ? Number(rentPrice) : undefined,
+        status,
+        badge: badge || 'New',
+        featured,
+        rating: 5.0,
+        seller: {
+          name: 'Soreti Homes (የቤት ሸያጭ ብቻ)',
+          role: 'Certified Addis Estate Broker',
+          phone: brokerPhone || '0998 635 499 / 0948 002 510',
+          verified: true
+        },
+        images: allImages,
+        specs: category === 'house' ? {
+          beds: Number(beds) || 0,
+          baths: Number(baths) || 0,
+          sqft: Number(area) || 0,
+          garageSlots: Number(garageSlots) || 0,
+          generator,
+          waterTank,
+          security: '24/7 Security Guard & Perimeter Fence',
+          interiorType: 'European Finish & Modern Architecture'
+        } : {
+          year,
+          mileage,
+          transmission,
+          fuelType,
+          engine,
+          dutyStatus,
+          seats: 5,
+          condition: 'Mint / Brand New Condition'
+        },
+        description: description || `Premium ${type} available for ${status.toLowerCase()} through Soreti Homes. Located in prime ${selectedServer}, Addis Ababa.`
+      };
       await onAddListing(newListing);
-      onClose();
+      setIsSaved(true);
+      setTimeout(onClose, 1200);
     } catch (err) {
       console.error('Failed to add listing:', err);
       setErrors(prev => ({
         ...prev,
-        submit: err.message || 'Failed to save listing to Supabase database.'
+        submit: getListingSaveErrorMessage(err, 'saved')
       }));
     } finally {
       setIsSubmitting(false);
@@ -180,10 +212,10 @@ export default function AddListingModal({ onClose, onAddListing }) {
             </div>
             <div>
               <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white">
-                Post New Asset to Supabase
+                Post New Listing
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Soreti Homes (የቤት ሸያጭ ብቻ) • Live Cloud Database
+                Soreti Homes (የቤት ሸያጭ ብቻ) • Online Listing Service
               </p>
             </div>
           </div>
@@ -200,6 +232,13 @@ export default function AddListingModal({ onClose, onAddListing }) {
           <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs flex items-center gap-2.5 animate-fade-in">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span className="font-semibold leading-relaxed">{errors.submit}</span>
+          </div>
+        )}
+
+        {isSaved && (
+          <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 text-xs flex items-center gap-2.5 animate-fade-in">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="font-semibold leading-relaxed">Listing added successfully.</span>
           </div>
         )}
 
@@ -264,7 +303,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
 
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-                Asset Type *
+                Listing Type *
               </label>
               <select
                 value={type}
@@ -286,39 +325,60 @@ export default function AddListingModal({ onClose, onAddListing }) {
               </label>
               <select
                 value={server}
-                onChange={(e) => setServer(e.target.value)}
-                className="w-full p-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setServer(value);
+                  if (value !== '__other__') setCustomServer('');
+                  if (errors.server) setErrors(prev => ({ ...prev, server: null }));
+                }}
+                className={`w-full p-3 text-xs sm:text-sm font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 cursor-pointer ${
+                  errors.server
+                    ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
+                    : 'border-slate-200 dark:border-slate-700'
+                }`}
               >
                 {ETHIOPIAN_DISTRICTS.map(s => (
                   <option key={s} value={s}>{s}</option>
                 ))}
+                <option value="__other__">+ Add other</option>
               </select>
+              {server === '__other__' && (
+                <input
+                  type="text"
+                  value={customServer}
+                  onChange={(e) => {
+                    setCustomServer(e.target.value);
+                    if (errors.server) setErrors(prev => ({ ...prev, server: null }));
+                  }}
+                  placeholder="Enter sub-city or district"
+                  className={`w-full p-3 mt-2 text-xs sm:text-sm font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none transition-all ${
+                    errors.server
+                      ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
+                      : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'
+                  }`}
+                />
+              )}
+              {errors.server && (
+                <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.server}</span>
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-                Specific Location / Street *
+                Specific Location / Street (Optional)
               </label>
               <input
                 type="text"
-                placeholder="e.g. Near Edna Mall, Bole, Addis Ababa"
+                placeholder="e.g. Near Edna Mall, Bole, Addis Ababa (optional)"
                 value={location}
                 onChange={(e) => {
                   setLocation(e.target.value);
-                  if (errors.location) setErrors(prev => ({ ...prev, location: null }));
                 }}
-                className={`w-full p-3 text-xs sm:text-sm font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none transition-all ${
-                  errors.location
-                    ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
-                    : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'
-                }`}
+                className="w-full p-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
               />
-              {errors.location && (
-                <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.location}</span>
-                </p>
-              )}
             </div>
           </div>
 
@@ -411,59 +471,72 @@ export default function AddListingModal({ onClose, onAddListing }) {
             </div>
           </div>
 
-          {/* Image URLs */}
-          <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800">
+          {/* Image Uploads */}
+          <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-800">
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-                Main Image URL *
+                Main Image *
               </label>
               <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => {
-                  setImageUrl(e.target.value);
-                  if (errors.imageUrl) setErrors(prev => ({ ...prev, imageUrl: null }));
-                }}
-                className={`w-full p-2.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none transition-all ${
-                  errors.imageUrl
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handlePrimaryImageChange}
+                className={`w-full p-2.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white file:mr-3 file:rounded-lg file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slate-950 focus:outline-none transition-all ${
+                  errors.image
                     ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
                     : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'
                 }`}
               />
-              {errors.imageUrl && (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                JPG, PNG, or WEBP up to 10 MB. The image is uploaded securely when you publish.
+              </p>
+              {errors.image && (
                 <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>{errors.imageUrl}</span>
+                  <span>{errors.image}</span>
                 </p>
               )}
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-1">
-                Additional Gallery Images (Comma or Newline Separated URLs)
+                Additional Gallery Images (Optional)
               </label>
-              <textarea
-                rows={2}
-                placeholder="https://... , https://..."
-                value={additionalImages}
-                onChange={(e) => setAdditionalImages(e.target.value)}
-                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleGalleryImagesChange}
+                className="w-full p-2.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white file:mr-3 file:rounded-lg file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slate-700 focus:outline-none focus:border-amber-500"
               />
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Select multiple files to add more listing photos.</p>
+              {errors.gallery && (
+                <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errors.gallery}</span>
+                </p>
+              )}
             </div>
 
-            {imageUrl && !errors.imageUrl && (
+            {imagePreview && !errors.image && (
               <div className="flex items-center gap-3 pt-1">
-                <img src={imageUrl} alt="Preview" className="w-16 h-12 rounded-lg object-cover border border-slate-300 dark:border-slate-700" />
+                <img src={imagePreview} alt="Primary preview" className="w-20 h-14 rounded-lg object-cover border border-slate-300 dark:border-slate-700" />
                 <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  Primary preview ready
+                  {imageFile?.name}
                 </span>
               </div>
+            )}
+            {galleryFiles.length > 0 && (
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {galleryFiles.length} additional image{galleryFiles.length === 1 ? '' : 's'} selected
+              </p>
             )}
           </div>
 
           {/* Dynamic Specifications based on Category */}
           {category === 'house' ? (
-            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-800">
               <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                 Property Specifications
               </span>
@@ -487,7 +560,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
               </div>
             </div>
           ) : (
-            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-800">
               <span className="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 block">
                 Vehicle Specifications
               </span>
@@ -535,7 +608,7 @@ export default function AddListingModal({ onClose, onAddListing }) {
             </label>
             <textarea
               rows={3}
-              placeholder="Describe the asset, architecture, features, security, compound, views..."
+              placeholder="Describe the listing, architecture, features, security, compound, views..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full p-3 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
@@ -568,20 +641,20 @@ export default function AddListingModal({ onClose, onAddListing }) {
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
+            <button
+              type="submit"
+              disabled={isSubmitting || isSaved}
             className="btn-primary w-full py-4 text-xs sm:text-sm font-extrabold justify-center shadow-lg shadow-amber-500/20 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Publishing to Supabase...</span>
+                <span>Publishing listing...</span>
               </span>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                <span>Publish Asset Directly to Supabase</span>
+                <span>Publish Listing</span>
               </>
             )}
           </button>

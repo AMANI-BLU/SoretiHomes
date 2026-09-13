@@ -136,7 +136,7 @@ export default function AdminAuthModal({ onAuthSuccess, onBackToStore }) {
             SORETI HOMES (የቤት ሸያጭ ብቻ)
           </h2>
           <p className="text-xs text-slate-400 font-medium">
-            Secure Administrator Access • Cloud Database Portal
+            Secure administrator sign in
           </p>
         </div>
 

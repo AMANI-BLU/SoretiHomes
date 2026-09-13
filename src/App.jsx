@@ -60,7 +60,7 @@ function SoretiHomesApp() {
     configured: isSupabaseConfigured,
     connected: false,
     tablesExist: false,
-    message: isSupabaseConfigured ? 'Connecting to live Supabase database...' : 'Supabase credentials missing in .env'
+    message: isSupabaseConfigured ? 'Connecting to the online listing service...' : 'The online listing service is not configured.'
   });
 
   // Check connection and fetch live Supabase records
@@ -542,7 +542,7 @@ function SoretiHomesApp() {
                   ? (t.featuredPropertiesCatalog || "FEATURED PROPERTIES CATALOG")
                   : activeTab === 'car'
                   ? (t.featuredVehiclesCatalog || "FEATURED VEHICLES CATALOG")
-                  : (t.featuredCatalog || "FEATURED ASSETS CATALOG")}
+                  : (t.featuredCatalog || "FEATURED LISTINGS")}
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white">
                 {activeTab === 'house'
@@ -583,7 +583,7 @@ function SoretiHomesApp() {
             <div className="py-24 text-center space-y-4 max-w-md mx-auto">
               <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto" />
               <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
-                Connecting to Live Supabase Database...
+                Loading Listings...
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 Fetching real Soreti Homes properties and luxury vehicles
@@ -595,10 +595,10 @@ function SoretiHomesApp() {
                 <Building2 className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
-                Live Supabase Connected — No Listings Yet
+                No Listings Yet
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                Your database is live and synchronized with Supabase. As an admin, you can log in to the secure portal to post real properties and vehicles.
+                Your online listing service is ready. Sign in to the admin area to add properties and vehicles.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                 <button
@@ -609,7 +609,7 @@ function SoretiHomesApp() {
                   className="btn-primary py-3 px-6 text-xs font-bold w-full sm:w-auto justify-center"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  Admin Portal & Listings Management
+                  Open Admin Area
                 </button>
               </div>
             </div>
@@ -618,7 +618,7 @@ function SoretiHomesApp() {
               <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
                 <SlidersHorizontal className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">No Assets Match Your Criteria</h3>
+              <h3 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{t?.noAssetsFound || 'No Listings Match Your Criteria'}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Try widening your price range, clearing filters, or searching for alternative titles.
               </p>

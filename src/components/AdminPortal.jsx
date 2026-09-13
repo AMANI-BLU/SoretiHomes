@@ -124,10 +124,10 @@ export default function AdminPortal({
         setConfirmConfig(prev => ({ ...prev, isProcessing: true }));
         try {
           await onDeleteListing(id);
-          showNotification(`Deleted asset "${title}"`);
+          showNotification(`Deleted listing "${title}"`);
           setConfirmConfig(prev => ({ ...prev, isOpen: false, isProcessing: false }));
         } catch (err) {
-          showNotification(`Failed to delete: ${err.message || 'Database error'}`);
+          showNotification('The listing could not be deleted. Please try again.');
           setConfirmConfig(prev => ({ ...prev, isProcessing: false }));
         }
       }
@@ -150,7 +150,7 @@ export default function AdminPortal({
           showNotification(`Deleted booking for "${customerName}"`);
           setConfirmConfig(prev => ({ ...prev, isOpen: false, isProcessing: false }));
         } catch (err) {
-          showNotification(`Failed to delete: ${err.message || 'Database error'}`);
+          showNotification('The booking could not be deleted. Please try again.');
           setConfirmConfig(prev => ({ ...prev, isProcessing: false }));
         }
       }
@@ -263,7 +263,7 @@ export default function AdminPortal({
                 className="w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 text-emerald-400 hover:bg-emerald-950/40 border border-emerald-800/40 transition-all"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Post New Asset</span>
+                <span>Post New Listing</span>
               </button>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function AdminPortal({
               className="btn-primary py-2.5 px-2.5 sm:px-4 text-xs font-bold"
             >
               <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Post Asset</span>
+              <span className="hidden sm:inline">Post Listing</span>
               <span className="sm:hidden">Post</span>
             </button>
             {onSignOut && (
@@ -387,7 +387,7 @@ export default function AdminPortal({
         {/* Dashboard Main Content */}
         <main className="p-4 sm:p-6 space-y-6 sm:space-y-8 flex-1 overflow-y-auto">
           
-          {/* Supabase Cloud Database Status Banner */}
+          {/* Listing Service Status Banner */}
           <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
             supabaseStatus.connected && supabaseStatus.tablesExist
               ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300'
@@ -409,7 +409,7 @@ export default function AdminPortal({
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-sm sm:text-base text-white">
-                      Supabase Cloud Database
+                      Online Listing Service
                     </h3>
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
                       supabaseStatus.connected && supabaseStatus.tablesExist
@@ -419,23 +419,23 @@ export default function AdminPortal({
                         : 'bg-slate-800 text-slate-400 border border-slate-700'
                     }`}>
                       {supabaseStatus.connected && supabaseStatus.tablesExist
-                        ? 'Connected & Synced'
+                        ? 'Ready'
                         : supabaseStatus.connected && !supabaseStatus.tablesExist
-                        ? 'Schema Setup Required'
-                        : 'Local Fallback'}
+                        ? 'Setup Required'
+                        : 'Preview Mode'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                    {supabaseStatus.message || (supabaseStatus.connected ? 'Connected to project zncmoahddiwefpospeif.' : 'Operating in local memory mode.')}
+                    {supabaseStatus.message || (supabaseStatus.connected ? 'Everything is ready to use.' : 'Using preview mode.')}
                   </p>
                   {supabaseStatus.connected && !supabaseStatus.tablesExist && (
                     <div className="mt-2.5 p-3 rounded-xl bg-slate-950/80 border border-amber-900/40 text-[11px] text-amber-200/90 space-y-1">
                       <p className="font-bold flex items-center gap-1.5 text-amber-300">
                         <AlertCircle className="w-3.5 h-3.5" />
-                        Next Step to Activate Database:
+                        Setup Needed:
                       </p>
                       <p>
-                        Open your Supabase project dashboard &rarr; <span className="font-mono text-white">SQL Editor</span>, paste the contents of <span className="font-mono text-amber-300">supabase_schema.sql</span> (located in project root), and click <strong>Run</strong>. Then click &ldquo;Refresh Status&rdquo; below!
+                        Ask the site owner to finish setting up the online listing service, then refresh this page.
                       </p>
                     </div>
                   )}
@@ -472,7 +472,7 @@ export default function AdminPortal({
             <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Total Listed Assets
+                  Total Listings
                 </span>
                 <span className="text-3xl font-extrabold text-white mt-1 block">
                   {listings.length}
@@ -545,7 +545,7 @@ export default function AdminPortal({
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
-                placeholder={activeTab === 'bookings' ? "Search client name, phone or asset..." : "Search asset title, region or specs..."}
+                placeholder={activeTab === 'bookings' ? "Search client name, phone or listing..." : "Search listing title, region or details..."}
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 text-xs font-bold bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-amber-500"
@@ -565,7 +565,7 @@ export default function AdminPortal({
                   <thead className="bg-slate-950 text-slate-400 uppercase font-extrabold border-b border-slate-800">
                     <tr>
                       <th className="p-4">Customer Info</th>
-                      <th className="p-4">Requested Asset</th>
+                      <th className="p-4">Requested Listing</th>
                       <th className="p-4">Inspection Date & Time</th>
                       <th className="p-4">Customer Notes</th>
                       <th className="p-4">Status</th>
@@ -678,7 +678,7 @@ export default function AdminPortal({
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-950 text-slate-400 uppercase font-extrabold border-b border-slate-800">
                     <tr>
-                      <th className="p-4">Asset Details</th>
+                      <th className="p-4">Listing Details</th>
                       <th className="p-4">Category / Type</th>
                       <th className="p-4">City District / Region</th>
                       <th className="p-4">Price</th>
@@ -694,9 +694,9 @@ export default function AdminPortal({
                           <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
                             <Building2 className="w-6 h-6" />
                           </div>
-                          <p className="font-bold text-white text-sm">No live assets in your database</p>
+                          <p className="font-bold text-white text-sm">No Listings Yet</p>
                           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                            Publish your first real property or luxury motor directly to Supabase cloud.
+                            Add your first property or vehicle to start building your listings.
                           </p>
                           <div className="pt-2">
                             <button
@@ -704,7 +704,7 @@ export default function AdminPortal({
                               className="btn-primary py-2.5 px-5 text-xs font-bold mx-auto inline-flex items-center gap-2"
                             >
                               <PlusCircle className="w-4 h-4" />
-                              Post New Asset Now
+                              Post New Listing
                             </button>
                           </div>
                         </td>
@@ -780,14 +780,14 @@ export default function AdminPortal({
                               <button
                                 onClick={() => setEditingItem(item)}
                                 className="p-2 rounded-lg bg-slate-800 text-amber-400 hover:bg-amber-600 hover:text-slate-950 transition-all"
-                                title="Edit Asset"
+                                title="Edit Listing"
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteListingClick(item.id, item.title)}
                                 className="p-2 rounded-lg bg-slate-800 text-rose-400 hover:bg-rose-600 hover:text-white transition-all"
-                                title="Delete Asset"
+                                title="Delete Listing"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>

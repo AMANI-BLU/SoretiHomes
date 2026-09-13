@@ -81,7 +81,7 @@ export default function FilterBar({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            {t?.allAssets || "All Assets"}
+            {t?.allAssets || "All Listings"}
           </button>
 
           <button
@@ -197,9 +197,9 @@ export default function FilterBar({
         </div>
 
         {/* Asset Subtype Tags Dropdown / Selector */}
-        <div className="lg:col-span-3 bg-slate-50/90 dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-700/90">
+          <div className="lg:col-span-3 bg-slate-50/90 dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-700/90">
           <label className="block text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1.5">
-            {t?.assetType || "Asset Type"}
+            {t?.assetType || "Listing Type"}
           </label>
           <select
             value={selectedType}
@@ -370,7 +370,7 @@ export default function FilterBar({
         {/* Results Counter */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-extrabold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-            {totalResults} {totalResults === 1 ? 'Asset' : 'Assets'} Found
+            {totalResults} {totalResults === 1 ? 'Listing' : 'Listings'} Found
           </span>
           {hasActiveFilters && (
             <span className="text-xs font-medium text-slate-400 dark:text-slate-500 hidden sm:inline">

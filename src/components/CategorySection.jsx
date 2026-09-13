@@ -18,10 +18,10 @@ export default function CategorySection({ onSelectCategory, t }) {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 sm:mb-12 gap-4">
           <div className="space-y-1">
             <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-              {t?.chooseCategory || "CHOOSE BY ASSET TYPE"}
+              {t?.chooseCategory || "CHOOSE BY PROPERTY OR VEHICLE TYPE"}
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white">
-              {t?.featuredHeadline || "Find an Asset That Fits"} <span className="text-amber-500 dark:text-amber-400">{t?.justForYou || "Your Lifestyle"}</span>
+              {t?.featuredHeadline || "Find a Listing That Fits"} <span className="text-amber-500 dark:text-amber-400">{t?.justForYou || "Your Lifestyle"}</span>
             </h2>
           </div>
           

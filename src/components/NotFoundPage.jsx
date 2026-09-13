@@ -17,7 +17,7 @@ export default function NotFoundPage({ onNavigateHome, onExploreCategory }) {
             404
           </span>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-            Page or Asset Not Found
+            Page or Listing Not Found
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             The page, property, or vehicle listing you are trying to view does not exist, has been sold, or has moved to a different location.

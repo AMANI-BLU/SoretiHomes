@@ -127,7 +127,7 @@ export default function ListingDetailModal({
               {/* Verified Badge Overlay */}
               <div className="absolute top-4 left-4 bg-amber-500/90 text-slate-950 text-[11px] font-extrabold px-3 py-1.5 rounded-lg backdrop-blur-md flex items-center gap-1.5 shadow-md">
                 <ShieldCheck className="w-4 h-4 text-slate-950" />
-                Soreti Verified Asset
+                Soreti Verified Listing
               </div>
             </div>
 

@@ -19,6 +19,92 @@ export const supabase = isSupabaseConfigured
   })
   : null;
 
+export const LISTING_IMAGE_BUCKET = 'listing-images';
+export const MAX_LISTING_IMAGE_SIZE = 10 * 1024 * 1024;
+const LISTING_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+export function validateListingImageFile(file) {
+  if (!file) return 'Please choose an image file.';
+  if (!LISTING_IMAGE_TYPES.has(file.type)) {
+    return 'Only JPG, PNG, and WEBP images are supported.';
+  }
+  if (file.size > MAX_LISTING_IMAGE_SIZE) {
+    return 'Each image must be 10 MB or smaller.';
+  }
+  return null;
+}
+
+export function getListingSaveErrorMessage(error, action = 'saved') {
+  const details = [error?.message, error?.details, error?.hint, error?.code]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (details.includes('jwt') || details.includes('session') || details.includes('not authenticated')) {
+    return 'Your admin session has expired. Please sign in again and try once more.';
+  }
+
+  if (details.includes('storage') || details.includes('bucket')) {
+    return 'Image uploading is not ready yet. Please sign out and back in, then ask the site owner to finish the image setup.';
+  }
+
+  if (details.includes('row-level security') || details.includes('permission denied') || details.includes('admin_access_required')) {
+    return 'Your admin access or image setup is not ready yet. Please sign out and back in, then ask the site owner to finish the setup.';
+  }
+
+  if (details.includes('not configured') || details.includes('listing_service_not_configured')) {
+    return 'The listing service is not ready yet. Please ask the site owner to finish the setup.';
+  }
+
+  if (details.includes('duplicate key')) {
+    return 'This listing was submitted twice. Please wait a moment and try again.';
+  }
+
+  return `The listing could not be ${action}. Please try again.`;
+}
+
+export async function uploadListingImage(file) {
+  if (!supabase) throw new Error('Supabase is not configured in .env');
+
+  const validationError = validateListingImageFile(file);
+  if (validationError) throw new Error(validationError);
+
+  const extensionByType = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp'
+  };
+  const id = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const path = `listings/${id}.${extensionByType[file.type]}`;
+
+  const { data, error } = await supabase.storage
+    .from(LISTING_IMAGE_BUCKET)
+    .upload(path, file, {
+      cacheControl: '31536000',
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (error) {
+    console.error('[Supabase Storage] uploadListingImage error:', error);
+    throw error;
+  }
+
+  if (!data?.path) {
+    throw new Error('IMAGE_UPLOAD_FAILED');
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from(LISTING_IMAGE_BUCKET)
+    .getPublicUrl(data.path);
+
+  if (!publicUrlData?.publicUrl) {
+    throw new Error('IMAGE_URL_NOT_RETURNED');
+  }
+
+  return publicUrlData.publicUrl;
+}
+
 /**
  * Check connectivity and whether tables are provisioned.
  * @returns {Promise<{ connected: boolean, tablesExist: boolean, message: string }>}
@@ -28,7 +114,7 @@ export async function checkSupabaseConnection() {
     return {
       connected: false,
       tablesExist: false,
-      message: 'Supabase credentials are not configured in .env'
+      message: 'The online listing service is not configured.'
     };
   }
 
@@ -43,26 +129,26 @@ export async function checkSupabaseConnection() {
         return {
           connected: true,
           tablesExist: false,
-          message: 'Connected to Supabase, but the "listings" table has not been created yet. Run supabase_schema.sql in the Supabase SQL editor.'
+          message: 'The online listing service is connected, but listings have not been set up yet.'
         };
       }
       return {
         connected: false,
         tablesExist: false,
-        message: error.message || 'Supabase query error'
+        message: 'Unable to read listings right now.'
       };
     }
 
     return {
       connected: true,
       tablesExist: true,
-      message: 'Connected to Supabase successfully.'
+      message: 'The online listing service is connected and ready.'
     };
   } catch (err) {
     return {
       connected: false,
       tablesExist: false,
-      message: err.message || 'Network error connecting to Supabase'
+      message: 'Unable to connect to the online listing service.'
     };
   }
 }
@@ -189,7 +275,7 @@ export async function fetchSupabaseListings() {
 }
 
 export async function createSupabaseListing(item) {
-  if (!supabase) return null;
+  if (!supabase) throw new Error('LISTING_SERVICE_NOT_CONFIGURED');
   const payload = toListingDb(item);
   const { data, error } = await supabase
     .from('listings')
@@ -205,7 +291,7 @@ export async function createSupabaseListing(item) {
 }
 
 export async function updateSupabaseListing(item) {
-  if (!supabase) return null;
+  if (!supabase) throw new Error('LISTING_SERVICE_NOT_CONFIGURED');
   const payload = toListingDb(item);
   const { data, error } = await supabase
     .from('listings')
@@ -222,7 +308,7 @@ export async function updateSupabaseListing(item) {
 }
 
 export async function deleteSupabaseListing(id) {
-  if (!supabase) return null;
+  if (!supabase) throw new Error('LISTING_SERVICE_NOT_CONFIGURED');
   const { error } = await supabase
     .from('listings')
     .delete()

@@ -36,7 +36,7 @@ export default function ConfirmModal({
       }}
     >
       <div 
-        className="modal-content max-w-md w-full my-auto p-6 sm:p-7 space-y-5 animate-scale-up border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-3xl relative"
+        className="modal-content max-w-sm w-full my-auto p-5 sm:p-6 space-y-5 animate-scale-up border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl rounded-3xl relative"
         role="dialog"
         aria-modal="true"
       >

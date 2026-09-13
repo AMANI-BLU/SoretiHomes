@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS public.listings (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Keep the street field optional for databases created with an earlier version.
+ALTER TABLE public.listings ALTER COLUMN location DROP NOT NULL;
+
 -- 2. Create Bookings Table
 CREATE TABLE IF NOT EXISTS public.bookings (
   id TEXT PRIMARY KEY,
@@ -146,11 +149,53 @@ CREATE POLICY "Admin Update Bookings"
 DROP POLICY IF EXISTS "Public Delete Bookings" ON public.bookings;
 DROP POLICY IF EXISTS "Admin Delete Bookings" ON public.bookings;
 CREATE POLICY "Admin Delete Bookings"
-  ON public.bookings FOR DELETE 
+  ON public.bookings FOR DELETE
   TO authenticated
   USING (public.is_admin());
 
--- 6. Helper Trigger to automatically maintain updated_at timestamp
+-- 6. Listing image storage
+-- The bucket is public for storefront image delivery, but only admins can
+-- upload, replace, or delete objects in the listings/ folder.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('listing-images', 'listing-images', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Admin Upload Listing Images" ON storage.objects;
+CREATE POLICY "Admin Upload Listing Images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'listing-images'
+    AND name LIKE 'listings/%'
+    AND public.is_admin()
+  );
+
+DROP POLICY IF EXISTS "Admin Update Listing Images" ON storage.objects;
+CREATE POLICY "Admin Update Listing Images"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (
+    bucket_id = 'listing-images'
+    AND name LIKE 'listings/%'
+    AND public.is_admin()
+  )
+  WITH CHECK (
+    bucket_id = 'listing-images'
+    AND name LIKE 'listings/%'
+    AND public.is_admin()
+  );
+
+DROP POLICY IF EXISTS "Admin Delete Listing Images" ON storage.objects;
+CREATE POLICY "Admin Delete Listing Images"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'listing-images'
+    AND name LIKE 'listings/%'
+    AND public.is_admin()
+  );
+
+-- 7. Helper Trigger to automatically maintain updated_at timestamp
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
