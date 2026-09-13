@@ -7,16 +7,43 @@ import ListingCard from './components/ListingCard';
 import ListingDetailModal from './components/ListingDetailModal';
 import AddListingModal from './components/AddListingModal';
 import AdminPortal from './components/AdminPortal';
+import AdminAuthModal from './components/AdminAuthModal';
+import ResetPasswordModal from './components/ResetPasswordModal';
+import NotFoundPage from './components/NotFoundPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import StatsBanner from './components/StatsBanner';
 import Footer from './components/Footer';
 import InitialIntentModal from './components/InitialIntentModal';
 import InitialLanguageModal from './components/InitialLanguageModal';
-import { MOCK_LISTINGS, MOCK_BOOKINGS } from './data/mockListings';
 import { TRANSLATIONS } from './data/translations';
-import { X, Heart, SlidersHorizontal, ArrowUpRight } from 'lucide-react';
+import { X, Heart, SlidersHorizontal, ArrowUpRight, Loader2, PlusCircle, Building2 } from 'lucide-react';
+import {
+  isSupabaseConfigured,
+  checkSupabaseConnection,
+  fetchSupabaseListings,
+  createSupabaseListing,
+  updateSupabaseListing,
+  deleteSupabaseListing,
+  fetchSupabaseBookings,
+  createSupabaseBooking,
+  updateSupabaseBookingStatus,
+  deleteSupabaseBooking,
+  getAdminSession,
+  onAdminAuthStateChange,
+  signOutAdmin,
+  isAdminUser
+} from './lib/supabase';
 
-export default function App() {
-  const [listings, setListings] = useState(MOCK_LISTINGS);
+function SoretiHomesApp() {
+  const [listings, setListings] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Admin Authentication State
+  const [adminUser, setAdminUser] = useState(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  // Navigation & Routing State
   const [viewMode, setViewMode] = useState('store'); // 'store' | 'admin'
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'house' | 'car'
@@ -28,29 +55,116 @@ export default function App() {
   const [sortBy, setSortBy] = useState('recommended');
   const [onlyVerified, setOnlyVerified] = useState(false);
 
-  // Bookings State Management (Persisted in localStorage)
-  const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem('soreti_bookings');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { console.error(e); }
-    }
-    return MOCK_BOOKINGS;
+  // Supabase Connection Status
+  const [supabaseStatus, setSupabaseStatus] = useState({
+    configured: isSupabaseConfigured,
+    connected: false,
+    tablesExist: false,
+    message: isSupabaseConfigured ? 'Connecting to live Supabase database...' : 'Supabase credentials missing in .env'
   });
 
+  // Check connection and fetch live Supabase records
+  const refreshSupabaseStatus = async () => {
+    setIsLoading(true);
+    if (!isSupabaseConfigured) {
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const status = await checkSupabaseConnection();
+      setSupabaseStatus({ configured: true, ...status });
+      if (status.connected && status.tablesExist) {
+        // Listings are public; bookings contain customer contact details and
+        // are fetched only after an authorized admin session is established.
+        const dbListings = await fetchSupabaseListings();
+        setListings(dbListings || []);
+      }
+    } catch (e) {
+      console.warn('[Supabase] Init/Refresh error:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check Supabase session on startup and subscribe to auth state changes
   useEffect(() => {
-    localStorage.setItem('soreti_bookings', JSON.stringify(bookings));
-  }, [bookings]);
+    refreshSupabaseStatus();
 
-  const handleAddBooking = (newBooking) => {
-    setBookings(prev => [newBooking, ...prev]);
+    getAdminSession()
+      .then(({ user }) => {
+        setAdminUser(isAdminUser(user) ? user : null);
+        setAuthChecking(false);
+      })
+      .catch((err) => {
+        console.warn('[Supabase Auth] Session verification error:', err);
+        setAuthChecking(false);
+      });
+
+    const { data: authListener } = onAdminAuthStateChange((event, user) => {
+      setAdminUser(isAdminUser(user) ? user : null);
+      if (event === 'SIGNED_OUT') {
+        if (viewMode === 'admin' || window.location.pathname.startsWith('/admin')) {
+          setViewMode('store');
+          navigateTo('/admin');
+        }
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // When admin authenticates, load fresh bookings (RLS protected)
+  useEffect(() => {
+    if (adminUser) {
+      fetchSupabaseBookings()
+        .then((dbBookings) => {
+          if (dbBookings) setBookings(dbBookings);
+        })
+        .catch((e) => console.warn('[Supabase] Admin booking fetch warning:', e));
+    }
+  }, [adminUser]);
+
+  // Sign out admin handler
+  const handleAdminSignOut = async () => {
+    try {
+      await signOutAdmin();
+    } catch (err) {
+      console.warn('Sign out warning:', err);
+    } finally {
+      setAdminUser(null);
+      setViewMode('store');
+      navigateTo('/admin');
+    }
   };
 
-  const handleUpdateBookingStatus = (id, newStatus) => {
+  const handleAddBooking = async (newBooking) => {
+    try {
+      const created = await createSupabaseBooking(newBooking);
+      setBookings(prev => [created || newBooking, ...prev]);
+    } catch (e) {
+      console.warn('[Supabase] Failed to persist booking:', e);
+      setBookings(prev => [newBooking, ...prev]);
+    }
+  };
+
+  const handleUpdateBookingStatus = async (id, newStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
+    try {
+      await updateSupabaseBookingStatus(id, newStatus);
+    } catch (e) {
+      console.warn('[Supabase] Failed to update booking status:', e);
+    }
   };
 
-  const handleDeleteBooking = (id) => {
+  const handleDeleteBooking = async (id) => {
     setBookings(prev => prev.filter(b => b.id !== id));
+    try {
+      await deleteSupabaseBooking(id);
+    } catch (e) {
+      console.warn('[Supabase] Failed to delete booking:', e);
+    }
   };
 
   // Language state ('en' | 'am' | 'om')
@@ -89,11 +203,13 @@ export default function App() {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  // Initial language and intent choices shown on the first page.
+  // Initial language and intent choices
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(() => {
     return localStorage.getItem('apex_language_selected') !== 'true';
   });
-  const [isIntentModalOpen, setIsIntentModalOpen] = useState(true);
+  const [isIntentModalOpen, setIsIntentModalOpen] = useState(() => {
+    return localStorage.getItem('apex_intent_selected') !== 'true';
+  });
 
   const handleSelectIntent = (category) => {
     setActiveTab(category);
@@ -107,7 +223,7 @@ export default function App() {
   };
 
   // Sync browser back/forward and URL location path
-  React.useEffect(() => {
+  useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
     };
@@ -116,7 +232,9 @@ export default function App() {
   }, []);
 
   const navigateTo = (path) => {
-    window.history.pushState({}, '', path);
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, '', path);
+    }
     setCurrentPath(path);
   };
 
@@ -129,12 +247,25 @@ export default function App() {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
   // Admin CRUD handlers
-  const handleUpdateListing = (updatedAsset) => {
-    setListings(prev => prev.map(item => item.id === updatedAsset.id ? updatedAsset : item));
+  const handleUpdateListing = async (updatedAsset) => {
+    try {
+      const saved = await updateSupabaseListing(updatedAsset);
+      setListings(prev => prev.map(item => item.id === updatedAsset.id ? (saved || updatedAsset) : item));
+      return saved;
+    } catch (e) {
+      console.error('[Supabase] Failed to update listing:', e);
+      throw e;
+    }
   };
 
-  const handleDeleteListing = (id) => {
-    setListings(prev => prev.filter(item => item.id !== id));
+  const handleDeleteListing = async (id) => {
+    try {
+      await deleteSupabaseListing(id);
+      setListings(prev => prev.filter(item => item.id !== id));
+    } catch (e) {
+      console.error('[Supabase] Failed to delete listing:', e);
+      throw e;
+    }
   };
 
   // Toggle Favorite Handler
@@ -145,10 +276,16 @@ export default function App() {
   };
 
   // Add Listing Handler
-  const handleAddListing = (newListing) => {
-    setListings(prev => [newListing, ...prev]);
-    // Switch tab to the added listing's category
-    setActiveTab(newListing.category);
+  const handleAddListing = async (newListing) => {
+    try {
+      const created = await createSupabaseListing(newListing);
+      setListings(prev => [created || newListing, ...prev]);
+      setActiveTab(newListing.category);
+      return created;
+    } catch (e) {
+      console.error('[Supabase] Failed to insert listing:', e);
+      throw e;
+    }
   };
 
   // Comprehensive Filter & Sorting Logic
@@ -166,7 +303,7 @@ export default function App() {
         const matchLoc = item.location.toLowerCase().includes(query);
         const matchServer = item.server.toLowerCase().includes(query);
         const matchType = item.type.toLowerCase().includes(query);
-        const matchSeller = item.seller.name.toLowerCase().includes(query);
+        const matchSeller = item.seller?.name?.toLowerCase()?.includes(query);
         if (!matchTitle && !matchLoc && !matchServer && !matchType && !matchSeller) return false;
       }
 
@@ -189,7 +326,7 @@ export default function App() {
       if (item.price > maxPrice) return false;
 
       // Verified Seller Filter
-      if (onlyVerified && !item.seller.verified) return false;
+      if (onlyVerified && !item.seller?.verified) return false;
 
       return true;
     });
@@ -234,9 +371,81 @@ export default function App() {
     setOnlyVerified(false);
   };
 
+  // Route Identifiers
+  const isResetPasswordRoute =
+    currentPath === '/reset-password' ||
+    (typeof window !== 'undefined' && (
+      window.location.hash.includes('type=recovery') ||
+      window.location.search.includes('type=recovery')
+    ));
+
   const isAdminRoute = currentPath === '/admin' || currentPath.startsWith('/admin') || viewMode === 'admin';
 
+  const validPaths = ['/', '/home', '/store', '/browse', '/houses', '/cars', '/admin', '/reset-password'];
+  const isValidRoute = validPaths.includes(currentPath) || currentPath.startsWith('/admin') || isResetPasswordRoute;
+
+  // 1. Password Reset Flow (triggered by recovery email link)
+  if (isResetPasswordRoute) {
+    return (
+      <ResetPasswordModal
+        onPasswordResetSuccess={() => {
+          setViewMode('admin');
+          navigateTo('/admin');
+        }}
+        onBackToStore={() => {
+          setViewMode('store');
+          navigateTo('/');
+        }}
+      />
+    );
+  }
+
+  // 2. 404 Route Protection (invalid paths)
+  if (!isValidRoute) {
+    return (
+      <NotFoundPage
+        onNavigateHome={() => {
+          setViewMode('store');
+          navigateTo('/');
+        }}
+        onExploreCategory={(cat) => {
+          setActiveTab(cat);
+          setViewMode('store');
+          navigateTo('/');
+          setTimeout(() => {
+            const section = document.getElementById('featured-listings');
+            if (section) section.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+      />
+    );
+  }
+
+  // 3. Admin Route Protection & Authentication Guard
   if (isAdminRoute) {
+    if (authChecking) {
+      return (
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 font-sans">
+          <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-3" />
+          <p className="text-xs font-semibold text-slate-400">Verifying secure admin session...</p>
+        </div>
+      );
+    }
+
+    if (!adminUser) {
+      return (
+        <AdminAuthModal
+          onAuthSuccess={(user) => {
+            if (isAdminUser(user)) setAdminUser(user);
+          }}
+          onBackToStore={() => {
+            setViewMode('store');
+            navigateTo('/');
+          }}
+        />
+      );
+    }
+
     return (
       <>
         <AdminPortal
@@ -253,6 +462,9 @@ export default function App() {
           bookings={bookings}
           onUpdateBookingStatus={handleUpdateBookingStatus}
           onDeleteBooking={handleDeleteBooking}
+          supabaseStatus={supabaseStatus}
+          adminUser={adminUser}
+          onSignOut={handleAdminSignOut}
         />
         {isAddListingOpen && (
           <AddListingModal
@@ -264,10 +476,11 @@ export default function App() {
     );
   }
 
+  // 4. Main Storefront View
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300">
       
-      {/* Initial Intent Modal ("What are you looking for today?") */}
+      {/* Initial Language Modal */}
       <InitialLanguageModal
         isOpen={isLanguageModalOpen}
         lang={lang}
@@ -278,14 +491,18 @@ export default function App() {
         t={t}
       />
 
+      {/* Initial Intent Modal ("What are you looking for today?") */}
       <InitialIntentModal
         isOpen={isIntentModalOpen && !isLanguageModalOpen}
-        onClose={() => setIsIntentModalOpen(false)}
+        onClose={() => {
+          setIsIntentModalOpen(false);
+          localStorage.setItem('apex_intent_selected', 'true');
+        }}
         onSelectIntent={handleSelectIntent}
         t={t}
       />
 
-      {/* 1. Header Navigation */}
+      {/* Header Navigation */}
       <Navbar
         setActiveTab={setActiveTab}
         favoritesCount={favorites.length}
@@ -299,7 +516,7 @@ export default function App() {
         t={t}
       />
 
-      {/* 2. Clean Hero Showcase Section */}
+      {/* Hero Showcase Section */}
       <HeroSection
         onExploreCategory={(cat) => {
           setActiveTab(cat);
@@ -310,10 +527,10 @@ export default function App() {
         t={t}
       />
 
-      {/* 3. Choose by Property / Car Type Category Cards */}
+      {/* Choose by Property / Car Type Category Cards */}
       <CategorySection onSelectCategory={handleCategorySelect} t={t} />
 
-      {/* 4. Main Featured Listings Grid with Interactive Filter Command Center */}
+      {/* Main Featured Listings Grid */}
       <main id="featured-listings" className="py-14 sm:py-20 bg-slate-50/70 dark:bg-slate-950/70 flex-1 transition-colors duration-300">
         <div className="app-container space-y-6">
           
@@ -362,7 +579,41 @@ export default function App() {
           />
 
           {/* Listings Cards Grid */}
-          {filteredListings.length === 0 ? (
+          {isLoading ? (
+            <div className="py-24 text-center space-y-4 max-w-md mx-auto">
+              <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto" />
+              <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                Connecting to Live Supabase Database...
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Fetching real Soreti Homes properties and luxury vehicles
+              </p>
+            </div>
+          ) : listings.length === 0 ? (
+            <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 sm:p-12 space-y-5 max-w-lg mx-auto shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto border border-amber-500/30">
+                <Building2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+                Live Supabase Connected — No Listings Yet
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                Your database is live and synchronized with Supabase. As an admin, you can log in to the secure portal to post real properties and vehicles.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setViewMode('admin');
+                    navigateTo('/admin');
+                  }}
+                  className="btn-primary py-3 px-6 text-xs font-bold w-full sm:w-auto justify-center"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Admin Portal & Listings Management
+                </button>
+              </div>
+            </div>
+          ) : filteredListings.length === 0 ? (
             <div className="py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 sm:p-12 space-y-5 max-w-md mx-auto shadow-sm">
               <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-500">
                 <SlidersHorizontal className="w-8 h-8" />
@@ -396,11 +647,16 @@ export default function App() {
         </div>
       </main>
 
-      {/* 5. Stats Banner */}
+      {/* Stats Banner */}
       <StatsBanner />
 
-      {/* 6. Footer */}
-      <Footer />
+      {/* Footer */}
+      <Footer
+        onNavigateAdmin={() => {
+          setViewMode('admin');
+          navigateTo('/admin');
+        }}
+      />
 
       {/* --- MODALS & DRAWERS --- */}
       
@@ -454,7 +710,7 @@ export default function App() {
                 {favoriteItems.map(item => (
                   <div
                     key={item.id}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:border-amber-300 dark:hover:border-amber-500 transition-all"
+                    className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-3 sm:gap-4 hover:border-amber-300 dark:hover:border-amber-500 transition-all"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <img src={item.images[0]} alt="" className="w-16 h-12 rounded-lg object-cover" />
@@ -493,5 +749,13 @@ export default function App() {
       )}
 
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <SoretiHomesApp />
+    </ErrorBoundary>
   );
 }

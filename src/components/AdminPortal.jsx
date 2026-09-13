@@ -21,9 +21,14 @@ import {
   Phone,
   User,
   Moon,
-  Sun
+  Sun,
+  Database,
+  AlertCircle,
+  KeyRound
 } from 'lucide-react';
 import EditAssetModal from './EditAssetModal';
+import ConfirmModal from './ConfirmModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 export default function AdminPortal({
   listings,
@@ -35,13 +40,17 @@ export default function AdminPortal({
   onBackToStore,
   bookings = [],
   onUpdateBookingStatus,
-  onDeleteBooking
+  onDeleteBooking,
+  supabaseStatus = { configured: false, connected: false, tablesExist: false, message: '' },
+  adminUser = null,
+  onSignOut
 }) {
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'house' | 'car' | 'featured' | 'bookings'
   const [searchFilter, setSearchFilter] = useState('');
   const [editingItem, setEditingItem] = useState(null);
   const [notification, setNotification] = useState(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const showNotification = (msg) => {
     setNotification(msg);
@@ -91,11 +100,61 @@ export default function AdminPortal({
     showNotification(`Updated featured status for "${item.title}"`);
   };
 
-  const handleDelete = (id, title) => {
-    if (window.confirm(`Are you sure you want to delete listing "${title}"?`)) {
-      onDeleteListing(id);
-      showNotification(`Deleted asset "${title}"`);
-    }
+  const [confirmConfig, setConfirmConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'danger',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    isProcessing: false,
+    onConfirm: () => {}
+  });
+
+  const handleDeleteListingClick = (id, title) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Listing',
+      message: `Are you sure you want to delete listing "${title}"?`,
+      type: 'danger',
+      confirmText: 'Delete Listing',
+      cancelText: 'Cancel',
+      isProcessing: false,
+      onConfirm: async () => {
+        setConfirmConfig(prev => ({ ...prev, isProcessing: true }));
+        try {
+          await onDeleteListing(id);
+          showNotification(`Deleted asset "${title}"`);
+          setConfirmConfig(prev => ({ ...prev, isOpen: false, isProcessing: false }));
+        } catch (err) {
+          showNotification(`Failed to delete: ${err.message || 'Database error'}`);
+          setConfirmConfig(prev => ({ ...prev, isProcessing: false }));
+        }
+      }
+    });
+  };
+
+  const handleDeleteBookingClick = (id, customerName) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Booking',
+      message: `Are you sure you want to delete the booking for "${customerName}"?`,
+      type: 'danger',
+      confirmText: 'Delete Booking',
+      cancelText: 'Cancel',
+      isProcessing: false,
+      onConfirm: async () => {
+        setConfirmConfig(prev => ({ ...prev, isProcessing: true }));
+        try {
+          await onDeleteBooking(id);
+          showNotification(`Deleted booking for "${customerName}"`);
+          setConfirmConfig(prev => ({ ...prev, isOpen: false, isProcessing: false }));
+        } catch (err) {
+          showNotification(`Failed to delete: ${err.message || 'Database error'}`);
+          setConfirmConfig(prev => ({ ...prev, isProcessing: false }));
+        }
+      }
+    });
   };
 
   const formatPrice = (val) => {
@@ -212,12 +271,41 @@ export default function AdminPortal({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 space-y-2">
+          {adminUser && (
+            <div className="px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center gap-2.5 text-slate-300 text-xs">
+              <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <div className="min-w-0">
+                <span className="block font-bold text-white text-[11px] truncate">{adminUser.email}</span>
+                <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block">Verified Admin</span>
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setIsPasswordModalOpen(true);
+              setMobileSidebarOpen(false);
+            }}
+            className="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-slate-800 hover:bg-amber-950/50 hover:text-amber-300 text-slate-300 transition-all border border-slate-700"
+          >
+            <KeyRound className="w-4 h-4" />
+            <span>Change Password</span>
+          </button>
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 transition-all border border-rose-800/60"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out Admin</span>
+            </button>
+          )}
           <button
             onClick={onBackToStore}
-            className="w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700"
+            className="w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700"
           >
-            <LogOut className="w-4 h-4 text-slate-400" />
+            <ArrowLeft className="w-4 h-4 text-slate-400" />
             <span>Return to Storefront</span>
           </button>
         </div>
@@ -258,6 +346,15 @@ export default function AdminPortal({
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-amber-950/50 hover:text-amber-300 transition-all border border-slate-700"
+              title="Change administrator password"
+              aria-label="Change administrator password"
+            >
+              <KeyRound className="w-4 h-4" />
+            </button>
+            <button
               onClick={toggleTheme}
               className="p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all border border-slate-700"
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -274,6 +371,15 @@ export default function AdminPortal({
               <span className="hidden sm:inline">Post Asset</span>
               <span className="sm:hidden">Post</span>
             </button>
+            {onSignOut && (
+              <button
+                onClick={onSignOut}
+                className="p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-rose-950/60 hover:text-rose-300 hover:border-rose-800 transition-all border border-slate-700"
+                title="Sign Out Admin"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
         </header>
@@ -281,6 +387,85 @@ export default function AdminPortal({
         {/* Dashboard Main Content */}
         <main className="p-4 sm:p-6 space-y-6 sm:space-y-8 flex-1 overflow-y-auto">
           
+          {/* Supabase Cloud Database Status Banner */}
+          <div className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+            supabaseStatus.connected && supabaseStatus.tablesExist
+              ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300'
+              : supabaseStatus.connected && !supabaseStatus.tablesExist
+              ? 'bg-amber-950/40 border-amber-800/60 text-amber-200'
+              : 'bg-slate-900 border-slate-800 text-slate-300'
+          }`}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  supabaseStatus.connected && supabaseStatus.tablesExist
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : supabaseStatus.connected && !supabaseStatus.tablesExist
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                }`}>
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-sm sm:text-base text-white">
+                      Supabase Cloud Database
+                    </h3>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
+                      supabaseStatus.connected && supabaseStatus.tablesExist
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        : supabaseStatus.connected && !supabaseStatus.tablesExist
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    }`}>
+                      {supabaseStatus.connected && supabaseStatus.tablesExist
+                        ? 'Connected & Synced'
+                        : supabaseStatus.connected && !supabaseStatus.tablesExist
+                        ? 'Schema Setup Required'
+                        : 'Local Fallback'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    {supabaseStatus.message || (supabaseStatus.connected ? 'Connected to project zncmoahddiwefpospeif.' : 'Operating in local memory mode.')}
+                  </p>
+                  {supabaseStatus.connected && !supabaseStatus.tablesExist && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-slate-950/80 border border-amber-900/40 text-[11px] text-amber-200/90 space-y-1">
+                      <p className="font-bold flex items-center gap-1.5 text-amber-300">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Next Step to Activate Database:
+                      </p>
+                      <p>
+                        Open your Supabase project dashboard &rarr; <span className="font-mono text-white">SQL Editor</span>, paste the contents of <span className="font-mono text-amber-300">supabase_schema.sql</span> (located in project root), and click <strong>Run</strong>. Then click &ldquo;Refresh Status&rdquo; below!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 shrink-0 self-end md:self-center">
+                {adminUser && (
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span className="text-slate-300 font-semibold truncate max-w-[200px]">
+                      {adminUser.email}
+                    </span>
+                  </div>
+                )}
+                {onSignOut && (
+                  <button
+                    type="button"
+                    onClick={onSignOut}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 hover:border-rose-800 text-slate-300 border border-slate-700 flex items-center gap-2 transition-all"
+                    title="Sign Out of Admin Portal"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Top Metric Cards Banner */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             
@@ -318,19 +503,19 @@ export default function AdminPortal({
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between">
-              <div>
+            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm flex items-center justify-between gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Market Valuation
                 </span>
-                <span className="text-2xl font-extrabold text-emerald-400 mt-1 block">
+                <span className="admin-metric-value text-xl sm:text-2xl font-extrabold text-emerald-400 mt-1 block leading-tight tabular-nums">
                   {formatPrice(totalVolume)}
                 </span>
                 <span className="text-[11px] font-semibold text-emerald-500 block mt-1">
                   Total Active Inventory
                 </span>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <DollarSign className="w-6 h-6" />
               </div>
             </div>
@@ -471,13 +656,8 @@ export default function AdminPortal({
                                 </button>
                               )}
                               <button
-                                onClick={() => {
-                                  if (window.confirm(`Delete booking for ${b.customerName}?`)) {
-                                    if (onDeleteBooking) onDeleteBooking(b.id);
-                                    showNotification(`Deleted booking for ${b.customerName}`);
-                                  }
-                                }}
-                                className="p-1.5 rounded-lg bg-slate-800 text-rose-400 hover:bg-rose-600 hover:text-white"
+                                onClick={() => handleDeleteBookingClick(b.id, b.customerName)}
+                                className="p-1.5 rounded-lg bg-slate-800 text-rose-400 hover:bg-rose-600 hover:text-white transition-all"
                                 title="Delete booking"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -510,8 +690,23 @@ export default function AdminPortal({
                   <tbody className="divide-y divide-slate-800/80 font-semibold text-slate-200">
                     {filteredListings.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-slate-500 font-bold">
-                          No assets found matching current navigation tab or search filters.
+                        <td colSpan={7} className="p-12 text-center text-slate-400 space-y-3">
+                          <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                            <Building2 className="w-6 h-6" />
+                          </div>
+                          <p className="font-bold text-white text-sm">No live assets in your database</p>
+                          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                            Publish your first real property or luxury motor directly to Supabase cloud.
+                          </p>
+                          <div className="pt-2">
+                            <button
+                              onClick={onAddListing}
+                              className="btn-primary py-2.5 px-5 text-xs font-bold mx-auto inline-flex items-center gap-2"
+                            >
+                              <PlusCircle className="w-4 h-4" />
+                              Post New Asset Now
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -522,7 +717,7 @@ export default function AdminPortal({
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <img
-                                src={item.images[0]}
+                                src={item.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80'}
                                 alt=""
                                 className="w-14 h-10 rounded-lg object-cover border border-slate-700 shrink-0"
                               />
@@ -553,7 +748,7 @@ export default function AdminPortal({
                           </td>
 
                           {/* Price */}
-                          <td className="p-4 font-extrabold text-emerald-400">
+                          <td className="p-4 font-extrabold text-emerald-400 break-words [overflow-wrap:anywhere]">
                             {formatPrice(item.price)}
                           </td>
 
@@ -590,7 +785,7 @@ export default function AdminPortal({
                                 <Edit className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDelete(item.id, item.title)}
+                                onClick={() => handleDeleteListingClick(item.id, item.title)}
                                 className="p-2 rounded-lg bg-slate-800 text-rose-400 hover:bg-rose-600 hover:text-white transition-all"
                                 title="Delete Asset"
                               >
@@ -612,6 +807,10 @@ export default function AdminPortal({
 
       </div>
 
+      {isPasswordModalOpen && (
+        <ChangePasswordModal onClose={() => setIsPasswordModalOpen(false)} />
+      )}
+
       {/* Edit Modal */}
       {editingItem && (
         <EditAssetModal
@@ -623,6 +822,19 @@ export default function AdminPortal({
           }}
         />
       )}
+
+      {/* Custom Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        type={confirmConfig.type}
+        confirmText={confirmConfig.confirmText}
+        cancelText={confirmConfig.cancelText}
+        isProcessing={confirmConfig.isProcessing}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+      />
 
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Car, Shield, Phone, Mail, Globe, ArrowUp, Send, MapPin } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ onNavigateAdmin }) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -103,7 +103,20 @@ export default function Footer() {
 
         {/* Bottom Copyright & Back to Top */}
         <div className="pt-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-          <p>© 2026 Soreti Homes (የቤት ሸያጭ ብቻ). All rights reserved. Addis Ababa, Ethiopia.</p>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <p>© 2026 Soreti Homes (የቤት ሸያጭ ብቻ). All rights reserved. Addis Ababa, Ethiopia.</p>
+            {onNavigateAdmin && (
+              <>
+                <span className="text-slate-700 hidden sm:inline">•</span>
+                <button
+                  onClick={onNavigateAdmin}
+                  className="text-amber-500/80 hover:text-amber-400 font-semibold transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Admin Portal</span>
+                </button>
+              </>
+            )}
+          </div>
 
           <button
             onClick={scrollToTop}

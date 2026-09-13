@@ -386,6 +386,12 @@ html.dark .hero-search-box, .dark .hero-search-box {
   overflow-x: hidden;
 }
 
+.admin-metric-value {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .admin-portal table {
   min-width: 900px;
 }

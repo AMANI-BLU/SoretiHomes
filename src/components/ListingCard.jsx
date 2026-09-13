@@ -24,8 +24,8 @@ export default function ListingCard({
       {/* Image Header Container */}
       <div className="relative h-60 overflow-hidden bg-slate-900">
         <img
-          src={item.images[0]}
-          alt={item.title}
+          src={item.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80'}
+          alt={item.title || 'Listing'}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/20 opacity-90" />
@@ -74,11 +74,11 @@ export default function ListingCard({
         
         <div>
           {/* Price Header */}
-          <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mb-2">
-            <span className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 mb-2 min-w-0">
+            <span className="min-w-0 max-w-full text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 tracking-tight break-words [overflow-wrap:anywhere] leading-tight">
               {formatPrice(item.price)}
             </span>
-            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+            <span className="min-w-0 max-w-full text-xs font-semibold text-slate-400 dark:text-slate-500 break-words [overflow-wrap:anywhere]">
               {formatPrice(item.rentPrice)}/mo
             </span>
           </div>
@@ -103,17 +103,23 @@ export default function ListingCard({
               <>
                 <div className="flex flex-col items-center text-center">
                   <Zap className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs.topSpeed}</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Speed</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate max-w-[80px]">
+                    {item.specs?.year || item.specs?.mileage || item.specs?.topSpeed || '2024'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Model</span>
                 </div>
                 <div className="flex flex-col items-center text-center border-x border-slate-200/80 dark:border-slate-700/80">
                   <Gauge className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs.horsepower}</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Power</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate max-w-[80px]">
+                    {item.specs?.engine || item.specs?.horsepower || 'V8 Engine'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Engine</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">Auto</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white truncate max-w-[80px]">
+                    {item.specs?.transmission || 'Auto'}
+                  </span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Trans</span>
                 </div>
               </>
@@ -121,17 +127,17 @@ export default function ListingCard({
               <>
                 <div className="flex flex-col items-center text-center">
                   <BedDouble className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs.beds} Beds</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs?.beds ?? 3} Beds</span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Beds</span>
                 </div>
                 <div className="flex flex-col items-center text-center border-x border-slate-200/80 dark:border-slate-700/80">
                   <Bath className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs.baths} Baths</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs?.baths ?? 2} Baths</span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Baths</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <Maximize2 className="w-4 h-4 text-amber-600 dark:text-amber-400 mb-1" />
-                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs.sqft} m²</span>
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white">{item.specs?.sqft || item.specs?.area || 250} m²</span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold">Area</span>
                 </div>
               </>

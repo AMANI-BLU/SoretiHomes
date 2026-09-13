@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Heart, MapPin, CheckCircle2, ShieldCheck, Phone, Send, BedDouble, Bath, Maximize2, Zap, Gauge, Sparkles } from 'lucide-react';
+import { X, Heart, MapPin, CheckCircle2, ShieldCheck, Phone, Send, BedDouble, Bath, Maximize2, Zap, Gauge, Sparkles, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function ListingDetailModal({
@@ -7,6 +7,7 @@ export default function ListingDetailModal({
   isFavorite,
   onToggleFavorite,
   onClose,
+  onAddBooking,
   t
 }) {
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
@@ -15,6 +16,7 @@ export default function ListingDetailModal({
   const [inquiryPhone, setInquiryPhone] = useState('');
   const [inquiryMessage, setInquiryMessage] = useState('');
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const [inquiryErrors, setInquiryErrors] = useState({});
 
   const isCar = item.category === 'car';
 
@@ -26,14 +28,53 @@ export default function ListingDetailModal({
     }).format(val);
   };
 
+  const validateInquiry = () => {
+    const errs = {};
+    if (!inquiryName.trim()) {
+      errs.name = 'Please provide your full name.';
+    } else if (inquiryName.trim().length < 3) {
+      errs.name = 'Full name must be at least 3 characters.';
+    }
+
+    if (!inquiryPhone.trim()) {
+      errs.phone = 'Phone number is required for follow-up.';
+    } else if (!/^[0-9+() -]{9,16}$/.test(inquiryPhone.trim())) {
+      errs.phone = 'Please enter a valid phone number (e.g. 0911000000).';
+    }
+
+    setInquiryErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleInquirySubmit = (e) => {
     e.preventDefault();
+    if (!validateInquiry()) return;
+
     setInquirySubmitted(true);
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     });
+
+    if (onAddBooking) {
+      onAddBooking({
+        id: `BK-${Date.now().toString().slice(-4)}`,
+        assetId: item.id,
+        assetTitle: item.title,
+        assetCategory: item.category,
+        assetPrice: item.price,
+        assetImage: item.images?.[0] || '',
+        assetLocation: item.location,
+        customerName: inquiryName,
+        customerPhone: inquiryPhone,
+        inspectionDate: new Date().toISOString().split('T')[0],
+        inspectionTime: 'General Inquiry / Site Visit',
+        notes: inquiryMessage || 'Direct inquiry submitted from listing detail page',
+        status: 'Pending',
+        createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      });
+    }
   };
 
   return (
@@ -78,7 +119,7 @@ export default function ListingDetailModal({
           <div className="space-y-3">
             <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-[16/9] border border-slate-200 dark:border-slate-800 shadow-lg group">
               <img
-                src={item.images[selectedImgIndex]}
+                src={item.images?.[selectedImgIndex] || item.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80'}
                 alt={item.title}
                 className="w-full h-full object-cover"
               />
@@ -91,7 +132,7 @@ export default function ListingDetailModal({
             </div>
 
             {/* Thumbnail Selection Bar */}
-            {item.images.length > 1 && (
+            {item.images && item.images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
                 {item.images.map((img, idx) => (
                   <button
@@ -171,29 +212,29 @@ export default function ListingDetailModal({
                 {isCar ? (
                   <>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Top Speed</span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Model Year</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
                         <Zap className="w-4 h-4 text-amber-500" />
-                        {item.specs.topSpeed}
+                        {item.specs?.year || '2024'}
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Horsepower</span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Mileage</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
                         <Gauge className="w-4 h-4 text-amber-500" />
-                        {item.specs.horsepower}
+                        {item.specs?.mileage || '0 KM'}
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">0 - 60 MPH</span>
-                      <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
-                        {item.specs.acceleration}
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Engine</span>
+                      <span className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5 truncate">
+                        {item.specs?.engine || item.specs?.horsepower || 'V8 Engine'}
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Transmission</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
-                        Automatic
+                        {item.specs?.transmission || 'Automatic'}
                       </span>
                     </div>
                   </>
@@ -203,27 +244,27 @@ export default function ListingDetailModal({
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Bedrooms</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
                         <BedDouble className="w-4 h-4 text-amber-500" />
-                        {item.specs.beds} Beds
+                        {item.specs?.beds ?? 3} Beds
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Bathrooms</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
                         <Bath className="w-4 h-4 text-amber-500" />
-                        {item.specs.baths} Baths
+                        {item.specs?.baths ?? 2} Baths
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Area</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
                         <Maximize2 className="w-4 h-4 text-amber-500" />
-                        {item.specs.sqft} m²
+                        {item.specs?.sqft || item.specs?.area || 250} m²
                       </span>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                       <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block">Parking</span>
                       <span className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1 mt-0.5">
-                        {item.specs.garageSlots} Spaces
+                        {item.specs?.garageSlots ?? 2} Spaces
                       </span>
                     </div>
                   </>
@@ -315,7 +356,7 @@ export default function ListingDetailModal({
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleInquirySubmit} className="space-y-4 bg-slate-50 dark:bg-slate-800/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <form onSubmit={handleInquirySubmit} noValidate className="space-y-4 bg-slate-50 dark:bg-slate-800/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3 pb-2 border-b border-slate-200 dark:border-slate-700">
                     <Send className="w-5 h-5 text-amber-500" />
                     <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
@@ -330,12 +371,24 @@ export default function ListingDetailModal({
                       </label>
                       <input
                         type="text"
-                        required
                         placeholder="e.g. Abebe Kebede"
                         value={inquiryName}
-                        onChange={(e) => setInquiryName(e.target.value)}
-                        className="w-full p-3 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                        onChange={(e) => {
+                          setInquiryName(e.target.value);
+                          if (inquiryErrors.name) setInquiryErrors(prev => ({ ...prev, name: null }));
+                        }}
+                        className={`w-full p-3 text-sm font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none transition-all ${
+                          inquiryErrors.name
+                            ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
+                            : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'
+                        }`}
                       />
+                      {inquiryErrors.name && (
+                        <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{inquiryErrors.name}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -344,12 +397,24 @@ export default function ListingDetailModal({
                       </label>
                       <input
                         type="tel"
-                        required
                         placeholder="0911000000"
                         value={inquiryPhone}
-                        onChange={(e) => setInquiryPhone(e.target.value)}
-                        className="w-full p-3 text-sm font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500"
+                        onChange={(e) => {
+                          setInquiryPhone(e.target.value);
+                          if (inquiryErrors.phone) setInquiryErrors(prev => ({ ...prev, phone: null }));
+                        }}
+                        className={`w-full p-3 text-sm font-semibold rounded-xl border bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none transition-all ${
+                          inquiryErrors.phone
+                            ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/20'
+                            : 'border-slate-200 dark:border-slate-700 focus:border-amber-500'
+                        }`}
                       />
+                      {inquiryErrors.phone && (
+                        <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{inquiryErrors.phone}</span>
+                        </p>
+                      )}
                     </div>
                   </div>
 

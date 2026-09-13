@@ -13,6 +13,7 @@
   "dependencies": {
     "@rolldown/binding-wasm32-wasi": "^1.2.8",
     "@rollup/wasm-node": "^4.63.2",
+    "@supabase/supabase-js": "^2.116.0",
     "canvas-confetti": "^1.9.4",
     "esbuild-wasm": "^0.28.2",
     "lucide-react": "^1.41.0",
